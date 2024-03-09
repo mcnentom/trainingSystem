@@ -9,14 +9,19 @@ generator client {
 // User model to represent users
 model User {
   user_id           Int          @id @default(autoincrement())
-  username              String
+  username          String
   email             String       @unique
   password          String
   enrolled_courses  CourseEnrollment[]
   discussions       Discussion[]
   taught_courses Course[]
-  comment         Comment[]
   certification   Certification[]
+}
+model Admin {
+  admin_id      Int       @id @default(autoincrement())
+  username      String    @unique
+  email         String    @unique
+  password      String
 }
 
 // Course model to represent courses
@@ -28,7 +33,6 @@ model Course {
   duration          Int          // Duration in days, weeks, etc.
   materials         CourseMaterial[]
   enrollments       CourseEnrollment[]
-   discussions       Discussion[]
    certification   Certification[]
    
 }
@@ -65,25 +69,10 @@ model User_Assessment {
 // Discussion model to represent discussion forums for courses
 model Discussion {
   discussion_id     Int          @id @default(autoincrement())
-  course            Course       @relation(fields: [course_id], references: [course_id])
-  course_id         Int
-  title             String
-  content           String
-  user              User         @relation(fields: [user_id], references: [user_id])
-  user_id           Int
-  comments          Comment[]
-}
-
-// Comment model to represent comments in discussions
-model Comment {
-  comment_id        Int          @id @default(autoincrement())
-  discussion        Discussion   @relation(fields: [discussion_id], references: [discussion_id])
-  discussion_id     Int
   content           String
   user              User         @relation(fields: [user_id], references: [user_id])
   user_id           Int
 }
-
 // Certification model to represent user certifications
 model Certification {
   certification_id  Int          @id @default(autoincrement())

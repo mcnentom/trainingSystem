@@ -3,6 +3,9 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import authRouter from './components/Auth.js'
 import dotenv from 'dotenv'
+import adminRouter from './components/Admin.js';
+import { adminProtectedRoute, protectedRoute } from './middlewares/AdminRouter.js';
+import adminActions from './Actions/AdminActions.js';
 // import { protectedRoute } from './routes/Queries.js';
 
 const app = express();
@@ -24,6 +27,8 @@ app.use(session({
 }));
 
 app.use( '/auth', authRouter);
+app.use('/admin', adminProtectedRoute, adminRouter);
+app.use('adminActions', adminProtectedRoute, adminActions);
 // app.use('/products', protectedRoute, productRouter)
 
 
