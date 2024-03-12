@@ -13,16 +13,16 @@ const loginSchema = {
     },
     password: {
         notEmpty: {
-            errorMessage: "username cannot be empty"
+            errorMessage: "password cannot be empty"
         },
         isString: {
-            errorMessage: "username must be a string"
+            errorMessage: "password must be a string"
         },
         isLength: {
             options: {
                 min: 7
             },
-            errorMessage: "username must exceed 4 characters"
+            errorMessage: "password must exceed 4 characters"
         },
         matches: {
             options: /^(?=.*\d)(?=.*[a-zA-Z])(?=.*[\W_]).{8,}$/, // Regular expression to include symbols, numbers, and strings

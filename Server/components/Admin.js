@@ -1,29 +1,27 @@
 import express from 'express';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import pkg2 from 'express-validator';
 import pkg from '@prisma/client';
-import { generateHashedPassword, generateToken, comparePassword  } from '../middlewares/auth.js';
+import { generateHashedPassword, generateToken, comparePassword } from '../middlewares/auth.js';
 import loginSchema from '../Validations/LoginSchema.js';
 import registerSchema from '../Validations/RegisterSchema.js';
 
-const{PrismaClient} = pkg;
+const { PrismaClient } = pkg;
 const prisma = new PrismaClient();
-const { validationResult, checkSchema} = pkg2;
+const { validationResult, checkSchema } = pkg2;
 const adminRouter = express.Router();
 
 // Route for registering a new admin
-adminRouter.post('/register',checkSchema(registerSchema), async (req, res) => {
+adminRouter.post('/register', checkSchema(registerSchema), async (req, res) => {
     const errors = validationResult(req)
-    if(!errors.isEmpty()) {
-        return res.status(400).send({ status: "fail", errors})
+    if (!errors.isEmpty()) {
+        return res.status(400).send({ status: "fail", errors })
     }
     const { username, email, password } = req.body;
 
     // Check if the username or email already exists
     const existingAdmin = await prisma.admin.findFirst({
         where: {
-                 email   
+            email
         }
     });
 
@@ -44,7 +42,7 @@ adminRouter.post('/register',checkSchema(registerSchema), async (req, res) => {
             }
         });
 
-        res.status(201).json({ message: 'Admin registered successfully',newAdmin});
+        res.status(201).json({ message: 'Admin registered successfully', newAdmin });
     } catch (error) {
         console.error('Error registering admin:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -52,14 +50,14 @@ adminRouter.post('/register',checkSchema(registerSchema), async (req, res) => {
 });
 
 // Route for logging in an admin
-adminRouter.post('/login',checkSchema(loginSchema), async (req, res) => {
+adminRouter.post('/login', checkSchema(loginSchema), async (req, res) => {
     const errors = validationResult(req)
-    if(!errors.isEmpty()) {
-        return res.status(400).send({ status: "fail", errors})
+    if (!errors.isEmpty()) {
+        return res.status(400).send({ status: "fail", errors })
     }
     const { email, password } = req.body;
 
-    // Find the admin by username
+    // Find the admin by email
     const admin = await prisma.admin.findFirst({
         where: {
             email

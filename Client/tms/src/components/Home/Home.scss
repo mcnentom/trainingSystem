@@ -1,0 +1,146 @@
+.main {
+    width: fit-content;
+    background: bisque;
+    height: fit-content;
+    
+
+    .courses{
+        color: #ccc;
+    }
+    nav {
+        background-color: rgb(59, 209, 209);
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        height: 4.5rem;
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin: 0 0 0 1rem;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        }
+
+        .btn {
+            margin: 1rem;
+            font-weight: 700;
+            height: 2.5rem;
+            color: rgb(25, 58, 222);
+        }
+
+        .btn:hover {
+            color: white;
+        }
+    }
+
+    .description {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        align-items: flex-start;
+        background: #e8dfdf;
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            margin:.1rem;
+            padding-left: .4rem;
+         h2{
+            font-size: 4rem;
+            margin: 0;
+         }
+         p{
+            font-size: 2rem;
+         }
+            .btn2 {
+                width: fit-content;
+                font-size: 1.2rem;
+                font-weight: 600; 
+                height: 3rem;
+            }
+        }
+
+        .image1{
+            
+            img {
+                margin: 1rem;
+               border-radius: 2rem;
+            }
+
+        }
+
+    }
+    .testimonials{
+        background:#e15353;
+        height: fit-content;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        
+       .card{
+        display: grid;
+        grid-template-columns: .5fr .5fr .5fr;
+        width: 80%;
+        gap: 2rem;
+        color: #e8dfdf;
+
+        span{
+            width: 70%;
+        }
+       }
+
+        img{
+            width: 15rem;
+            height: 15rem;
+            border-radius: 50%;
+        }
+    }
+    .plan{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        padding-bottom: 2rem;
+
+        .availablePlans{
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            width: 80%;
+
+            .plans{
+                border: 1px solid #ccc;
+                border-radius: 20px;
+                box-shadow: 0 2px 40px rgba(0, 0, 0, 0.7);
+                height: fit-content;
+                margin:0 .1rem;
+                padding: .5rem;
+                transition: all 1s ease-in-out;
+
+                h3{
+                    color: #a45555;
+                    font-size: 1.5rem;
+            
+                }
+                p{
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                }
+                .myplan{
+                    color: #ccc;
+                }
+                h6{
+                    font-size: 1rem;
+                }
+            }
+            .plans:hover{
+                transform: scale(1.1);
+            }
+        }
+
+    }
+}
