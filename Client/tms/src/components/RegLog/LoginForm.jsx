@@ -19,19 +19,29 @@ function LoginForm() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email, password }),
+                credentials: 'include',
             });
             if (response.ok) {
-                navigate('/content');
+                const data = await response.json();
+                const userType = data.userType;
+                console.log(userType);
+                if (userType === 'admin') {
+                    navigate('/adminpage');
+                } else if (userType === 'user') {
+                    navigate('/discussion');
+                } else {
+                    alert('Invalid user type');
+                }
             } else {
                 const errorData = await response.json();
-                alert(errorData.errors.errors[0].msg);
+                alert(errorData.error.errors[0].msg);
             }
         } catch (error) {
             console.error('Error:', error);
             alert('An error occurred');
         }
-        
     };
+    
     const navigateTo = async() =>{
         navigate('/register')
     }
@@ -46,7 +56,7 @@ function LoginForm() {
                     <br />
                     <label>Password:</label>
                     <input
-                        type={showPassword ? "text" : "password"} // Show password if showPassword is true
+                        type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className='input'

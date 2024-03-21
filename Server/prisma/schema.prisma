@@ -15,16 +15,15 @@ model User {
   enrolled_courses  CourseEnrollment[]
   discussions       Discussion[]
   taught_courses Course[]
-  comment          Comment[]
   certification   Certification[]
-  profile_image     String 
+  profile_image     String
 }
 model Admin {
   admin_id      Int       @id @default(autoincrement())
   username      String    @unique
   email         String    @unique
   password      String
-  profile_image     String
+  
 }
 
 // Course model to represent courses
@@ -73,15 +72,8 @@ model User_Assessment {
 model Discussion {
   discussion_id     Int          @id @default(autoincrement())
   content           String
-  user              User         @relation(fields: [user_id], references: [user_id])
-  user_id           Int
-}
-
-model Comment {
-  comment_id        Int          @id @default(autoincrement())
-  content           String
-  user              User         @relation(fields: [user_id], references: [user_id])
-  user_id           Int
+  user              User         @relation(fields: [email], references: [email])
+  email             String
 }
 // Certification model to represent user certifications
 model Certification {

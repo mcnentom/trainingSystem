@@ -7,7 +7,8 @@ import { createCanvas } from 'canvas';
 import fs from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import multer from 'multer'
+import multer from 'multer';
+import { authMiddleware } from '../middlewares/AdminRouter.js';
 import { generateHashedPassword, generateToken, comparePassword  } from '../middlewares/auth.js';
 
 const {PrismaClient} = pkg;
@@ -47,24 +48,24 @@ AuthRouter.post('/register', upload.single('profile_image'), checkSchema(registe
           // If a file is uploaded, save its path
           profileImagePath = req.file.path;
       } else {
-          // If no file is uploaded, generate initials from the username
-          const initials = username.split(' ').map(name => name[0]).join('').toUpperCase();
-          const canvas = createCanvas(100, 100);
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = 'lightgrey';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = 'black';
-          ctx.font = '48px serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(initials, canvas.width / 2, canvas.height / 2);
-          const buffer = canvas.toBuffer();
-          const timestamp = Date.now();
-          const filename = `initials_${timestamp}.png`;
-          const filepath = join(__dirname, 'uploads', filename);
-          await fs.promises.mkdir(join(__dirname, 'uploads'), { recursive: true });
-          await fs.promises.writeFile(filepath, buffer);
-          profileImagePath = filepath;
+          // // If no file is uploaded, generate initials from the username
+          // const initials = username.split(' ').map(name => name[0]).join('').toUpperCase();
+          // const canvas = createCanvas(100, 100);
+          // const ctx = canvas.getContext('2d');
+          // ctx.fillStyle = 'lightgrey';
+          // ctx.fillRect(0, 0, canvas.width, canvas.height);
+          // ctx.fillStyle = 'black';
+          // ctx.font = '48px serif';
+          // ctx.textAlign = 'center';
+          // ctx.textBaseline = 'middle';
+          // ctx.fillText(initials, canvas.width / 2, canvas.height / 2);
+          // const buffer = canvas.toBuffer();
+          // const timestamp = Date.now();
+          // const filename = `initials_${timestamp}.png`;
+          // const filepath = join(__dirname, 'uploads', filename);
+          // await fs.promises.mkdir(join(__dirname, 'uploads'), { recursive: true });
+          // await fs.promises.writeFile(filepath, buffer);
+          profileImagePath = "";
       }
 
       // Create the user
@@ -86,38 +87,58 @@ AuthRouter.post('/register', upload.single('profile_image'), checkSchema(registe
   // Login route
   AuthRouter.post('/login', checkSchema(loginSchema), async (req, res) => {
     const errors = validationResult(req)
-    if(!errors.isEmpty()) {
-        return res.status(400).send({ status: "fail", errors})
+    if (!errors.isEmpty()) {
+        return res.status(400).send({ status: "fail", errors })
     }
     const { email, password } = req.body;
-    // Find the user by username
-    const user = await prisma.user.findUnique({
-      where: {
-        email
-      }
-    });
-  
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-  
-    // Check if the password is correct
-    const passwordMatch = await comparePassword(password, user.password);
-  
-    if (!passwordMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-    const token = generateToken(user.id);
-    req.session.user = user;
-    res.cookie('auth_token', token);
-    res.status(201).json({ status: 'success', token });
-  });
 
-  AuthRouter.get("/logout", async (req, res) => {
-    // clear the auth_token cookie
-    // retrive token, verify the token 
-    res.clearCookie("auth_token");
-    res.send({status: "success", message: "user logged out"}).end()
-})
+    // Find the user in the admin table
+    const admin = await prisma.admin.findFirst({
+        where: {
+            email
+        }
+    });
+
+    // Find the user in the user table if not found in the admin table
+    if (!admin) {
+        const user = await prisma.user.findFirst({
+            where: {
+                email
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if the password is correct for the user
+        const passwordMatch = await comparePassword(password, user.password);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate JWT token for user
+        const token = generateToken(user.id, email, 'user');
+        req.session.user = user;
+        res.cookie('auth_token', token);
+        return res.status(200).json({ message: 'User logged in successfully', token, userType: 'user' });
+    }
+
+    // Check if the password is correct for the admin
+    const passwordMatch = await comparePassword(password, admin.password);
+
+    if (!passwordMatch) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate JWT token for admin
+    const token = generateToken(admin.id, email, 'admin' )
+    req.session.admin = admin;
+    res.cookie('auth_token', token);
+    res.status(200).json({ message: 'Admin logged in successfully', token, userType: 'admin' });
+});
+
+// AuthRouter.use(authMiddleware);
 
 export default AuthRouter;

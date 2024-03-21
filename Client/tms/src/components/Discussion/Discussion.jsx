@@ -1,66 +1,152 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'; 
+import React, { useEffect, useRef, useState } from "react";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import Peer from "peerjs";
+import io from "socket.io-client";
+import { Button, IconButton, TextField } from "@material-ui/core";
+import AssignmentIcon from "@material-ui/icons/Assignment";
+import PhoneIcon from "@material-ui/icons/Phone";
+import "./Discussion.scss";
 
-const DiscussionForum = () => {
-  const [content, setContent] = useState('');
-  const [discussions, setDiscussions] = useState([]);
+const socket = io.connect("http://localhost:3000");
+
+function Discussion() {
+  const [me, setMe] = useState("");
+  const [stream, setStream] = useState(null);
+  const [receivingCall, setReceivingCall] = useState(false);
+  const [caller, setCaller] = useState("");
+  const [callerSignal, setCallerSignal] = useState(null);
+  const [callAccepted, setCallAccepted] = useState(false);
+  const [idToCall, setIdToCall] = useState("");
+  const [callEnded, setCallEnded] = useState(false);
+  const [name, setName] = useState("");
+  const myVideo = useRef();
+  const userVideo = useRef();
+  const connectionRef = useRef();
 
   useEffect(() => {
-    // Fetch discussions when component mounts
-    fetchDiscussions();
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+      setStream(stream);
+      myVideo.current.srcObject = stream;
+    });
 
-    // Establish WebSocket connection
-    const socket = new WebSocket('http://localhost:3000');
+    socket.on("me", (id) => {
+      setMe(id);
+    });
 
-    // Listen for new discussions
-    socket.onmessage = (event) => {
-      const newDiscussion = JSON.parse(event.data);
-      setDiscussions((prevDiscussions) => [newDiscussion, ...prevDiscussions]);
-    };
-
-    // Cleanup function to close the WebSocket connection
-    return () => {
-      socket.close();
-    };
+    socket.on("callUser", (data) => {
+      setReceivingCall(true);
+      setCaller(data.from);
+      setName(data.name);
+      setCallerSignal(data.signal);
+    });
   }, []);
 
-  const fetchDiscussions = async () => {
-    try {
-      const response = await axios.get('http://localhost:3000/userActions/discussions');
-      setDiscussions(response.data);
-    } catch (error) {
-      console.error('Error fetching discussions:', error);
-    }
+  const callUser = (id) => {
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream: stream,
+    });
+    peer.on("signal", (data) => {
+      socket.emit("callUser", {
+        userToCall: id,
+        signalData: data,
+        from: me,
+        name: name,
+      });
+    });
+    peer.on("stream", (stream) => {
+      userVideo.current.srcObject = stream;
+    });
+    socket.on("callAccepted", (signal) => {
+      setCallAccepted(true);
+      peer.signal(signal);
+    });
+
+    connectionRef.current = peer;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('/api/discussions', { content });
-      setDiscussions([...discussions, response.data]);
-      setContent('');
-    } catch (error) {
-      console.error('Error posting discussion:', error);
-    }
+  const answerCall = () => {
+    setCallAccepted(true);
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream: stream,
+    });
+    peer.on("signal", (data) => {
+      socket.emit("answerCall", { signal: data, to: caller });
+    });
+    peer.on("stream", (stream) => {
+      userVideo.current.srcObject = stream;
+    });
+
+    peer.signal(callerSignal);
+    connectionRef.current = peer;
+  };
+
+  const leaveCall = () => {
+    setCallEnded(true);
+    connectionRef.current.destroy();
   };
 
   return (
-    <div>
-      <h1>Discussion Forum</h1>
-      <form onSubmit={handleSubmit}>
-        <textarea value={content} onChange={(e) => setContent(e.target.value)} />
-        <button type="submit">Post Discussion</button>
-      </form>
-      <div>
-        <h2>Recent Discussions</h2>
-        <ul>
-          {discussions.map((discussion) => (
-            <li key={discussion.discussion_id}>{discussion.content}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-};
+    <>
+      <h1 style={{ textAlign: "center", color: "#fff" }}>Zoomish</h1>
+      <div className="container">
+        <div className="video-container">
+          <div className="video">{stream && <video playsInline muted ref={myVideo} autoPlay style={{ width: "300px" }} />}</div>
+          <div className="video">
+            {callAccepted && !callEnded ? <video playsInline ref={userVideo} autoPlay style={{ width: "300px" }} /> : null}
+          </div>
+        </div>
+        <div className="myId">
+          <TextField
+            id="filled-basic"
+            label="Name"
+            variant="filled"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ marginBottom: "20px" }}
+          />
+          <CopyToClipboard text={me} style={{ marginBottom: "2rem" }}>
+            <Button variant="contained" color="primary" startIcon={<AssignmentIcon fontSize="large" />}>
+              Copy ID
+            </Button>
+          </CopyToClipboard>
 
-export default DiscussionForum;
+          <TextField
+            id="filled-basic"
+            label="ID to call"
+            variant="filled"
+            value={idToCall}
+            onChange={(e) => setIdToCall(e.target.value)}
+          />
+          <div className="call-button">
+            {callAccepted && !callEnded ? (
+              <Button variant="contained" color="secondary" onClick={leaveCall}>
+                End Call
+              </Button>
+            ) : (
+              <IconButton color="primary" aria-label="call" onClick={() => callUser(idToCall)}>
+                <PhoneIcon fontSize="large" />
+              </IconButton>
+            )}
+            {idToCall}
+          </div>
+        </div>
+        <div>
+          {receivingCall && !callAccepted ? (
+            <div className="caller">
+              <h1>{name} is calling...</h1>
+              <Button variant="contained" color="primary" onClick={answerCall}>
+                Answer
+              </Button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default Discussion;
