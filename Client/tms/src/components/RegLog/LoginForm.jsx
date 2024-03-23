@@ -28,7 +28,7 @@ function LoginForm() {
                 if (userType === 'admin') {
                     navigate('/adminpage');
                 } else if (userType === 'user') {
-                    navigate('/discussion');
+                    navigate('/course');
                 } else {
                     alert('Invalid user type');
                 }

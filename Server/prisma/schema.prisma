@@ -12,68 +12,44 @@ model User {
   username          String
   email             String       @unique
   password          String
-  enrolled_courses  CourseEnrollment[]
-  discussions       Discussion[]
+  profile_image     String
   taught_courses Course[]
   certification   Certification[]
-  profile_image     String
 }
 model Admin {
   admin_id      Int       @id @default(autoincrement())
   username      String    @unique
   email         String    @unique
   password      String
+ 
   
 }
 
 // Course model to represent courses
 model Course {
-  course_id         Int          @id @default(autoincrement())
-  course_name       String
-  instructor        User         @relation(fields: [instructor_id], references: [user_id])
+  course_id         Int              @id @default(autoincrement())
+  course_name       String           
+  instructor        User             @relation(fields: [instructor_id], references: [user_id])
   instructor_id     Int
-  duration          Int          // Duration in days, weeks, etc.
-  materials         CourseMaterial[]
-  enrollments       CourseEnrollment[]
-   certification   Certification[]
-   
+  duration          Int              // Duration in days, weeks, etc.
+  materialBatches   MaterialBatch[]
+  progress          Float            @default(0) // Progress percentage (0-100)
+  certification     Certification[]
 }
 
-// CourseMaterial model to represent course materials (e.g., documents, videos)
-model CourseMaterial {
-  material_id       Int          @id @default(autoincrement())
-  course            Course       @relation(fields: [course_id], references: [course_id])
-  course_id         Int
-  material_type     String       // Type of material (e.g., document, video)
-  material_url      String       // URL or file path
-}
-
-// CourseEnrollment model to represent user enrollment in courses
-model CourseEnrollment {
-  enrollment_id     Int          @id @default(autoincrement())
-  user              User         @relation(fields: [user_id], references: [user_id])
-  user_id           Int
-  course            Course       @relation(fields: [course_id], references: [course_id])
-  course_id         Int
-  progress          Float        @default(0) // Progress percentage (0-100)
-  assessments       User_Assessment[]
+model MaterialBatch {
+  batch_id        Int            @id @default(autoincrement())
+  course          Course         @relation(fields: [course_id], references: [course_id])
+  course_id       Int
+  batch_number    Int            // Batch number (1-5)
+  material_types  String         @db.Text
 }
 
 // UserAssessment model to represent user assessments (e.g., quizzes, exams)
 model User_Assessment {
   assessment_id     Int          @id @default(autoincrement())
-  enrollment        CourseEnrollment @relation(fields: [enrollment_id], references: [enrollment_id])
-  enrollment_id     Int
   assessment_type   String       // Type of assessment
   score             Float        // Score obtained by the user
-}
-
-// Discussion model to represent discussion forums for courses
-model Discussion {
-  discussion_id     Int          @id @default(autoincrement())
-  content           String
-  user              User         @relation(fields: [email], references: [email])
-  email             String
 }
 // Certification model to represent user certifications
 model Certification {

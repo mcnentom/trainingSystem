@@ -1,0 +1,100 @@
+*{
+    margin: 0;
+}
+.Admin{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+
+    .heading1{
+        color: #ccc;
+        margin: 1rem;
+    }
+    .AdminDiv{
+        display: grid;
+        grid-template-columns: .5fr 1.5fr;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        border:1px solid #ccc ;
+    
+        .sidebar{
+            width: 20rem;
+            background: #be7c7c;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            // margin: 1rem;
+    
+            ul{
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                color: antiquewhite;
+                margin:1rem;
+                height: 100%;
+                
+                .mylist{
+                   list-style: none;
+                   border: 1px solid #ccc;
+                   border-radius: 20px;
+                   box-shadow: 0 2px 40px rgba(0, 0, 0, 0.7);
+                   margin: .5rem;
+                   padding: 1rem;
+                   font-size: 1rem;
+                   font-weight: 800;
+                   transition: all 1s ease-in-out;
+                //    background: #c7abab; 
+                }
+                .mylist:hover{
+                    transform: scale(1.1);
+                    cursor: pointer;
+                }
+            }
+        }
+        .content{
+            background: #ccc;
+            .heading{
+                margin-bottom: 1rem;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                border: 1px solid #ccc;
+                // border-radius: 20px;
+                // box-shadow: 0 2px 40px rgba(0, 0, 0, 0.7);
+              }
+              
+              /* Table header styling */
+              th {
+                background-color: #f2f2f2;
+                padding: 8px;
+                text-align: left;
+                border-right: 3px solid #be7c7c;
+              }
+              
+              /* Table row styling */
+              td {
+                padding: 8px;
+                // border-bottom: 1px solid #ddd;
+                border-right: 3px solid #be7c7c;
+                font-size: 1.2rem;
+              }
+              
+              tr{
+                border:3px solid #be7c7c;
+              }
+              tr:nth-child(even) {
+                background-color: #f9f9f9;
+              }
+              
+              /* Highlighting rows on hover */
+              tr:hover {
+                background-color: #f2f2f2;
+              }
+        }
+    }
+}

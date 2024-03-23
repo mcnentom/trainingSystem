@@ -1,341 +1,205 @@
+import {Router} from 'express'
+import pkg2 from 'express-validator';
 import pkg from '@prisma/client';
-import express from 'express';
+import registerSchema from '../Validations/RegisterSchema.js';
+// import { dirname, join } from 'path';
+// import { fileURLToPath } from 'url';
+import multer from 'multer';
+import { generateHashedPassword, generateToken, comparePassword  } from '../middlewares/auth.js';
 
+const {PrismaClient} = pkg;
+const { validationResult, checkSchema} = pkg2;
+const prisma = new PrismaClient()
+const upload = multer({ dest: 'uploads/' }); 
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
+const adminActions = Router();
 
-const { PrismaClient } = pkg;
-const prisma = new PrismaClient();
-
-const adminActions = express.Router();
-
-adminActions.get('/user-course-info', async (req, res) => {
+adminActions.get('/users',async (req, res) => {
     try {
-        const userCourseInfo = await prisma.user.findMany({
+        const userDetails = await prisma.user.findMany({
             select: {
                 username: true,
                 email: true,
-                enrolled_courses: {
+               taught_courses: {
                     select: {
-                        course: {
-                            select: {
-                                course_name: true,
-                                instructor: {
-                                    select: {
-                                        username: true
-                                    }
-                                },
-                                materials: {
-                                    select: {
-                                        material_type: true,
-                                        material_url: true
-                                    }
-                                }
-                            }
-                        },
-                        progress: true,
-                        assessments: {
-                            select: {
-                                assessment_type: true,
-                                score: true
-                            }
-                        }
+                        course_name: true,
+                        duration: true,
+                        progress: true
                     }
                 },
                 certification: {
                     select: {
                         date_achieved: true
                     }
+                },
+            },
+        });
+
+        if (!userDetails) {
+            return res.status(404).json({ error: 'No user found' });
+        }
+
+        res.json(userDetails);
+    } catch (error) {
+        console.error('Error retrieving user details:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+adminActions.post('/courses', async (req, res) => {
+    try {
+        const { course_name, duration, material_types } = req.body;
+
+        // Check if the course exists in the database
+        const existingCourse = await prisma.course.findFirst({
+            where: { course_name }
+        });
+
+        if (!existingCourse) {
+            // If the course does not exist, create a new course
+            const newCourse = await prisma.course.create({
+                data: {
+                    course_name,
+                    instructor_id: 1, 
+                    duration,
+                    progress: 0
                 }
+            });
+
+            // Create a new material batch for the new course
+            const newMaterialBatch = await prisma.materialBatch.create({
+                data: {
+                    course_id: newCourse.course_id,
+                    batch_number: 1,
+                    material_types
+                }
+            });
+
+            // Return the response with the newly created course and material batch
+            return res.json({ 
+                material_types: newMaterialBatch.material_types,
+                batch_number: newMaterialBatch.batch_number,
+                course: newCourse
+            });
+        }
+
+        // Check if the material types already exist for the course
+        const existingMaterialBatch = await prisma.materialBatch.findFirst({
+            where: {
+                course_id: existingCourse.course_id,
+                material_types
             }
         });
-        res.json(userCourseInfo);
+
+        if (existingMaterialBatch) {
+            // If the material types already exist, return the existing data
+            return res.json({ 
+                material_types: existingMaterialBatch.material_types,
+                batch_number: existingMaterialBatch.batch_number,
+                course: existingCourse
+            });
+        }
+
+        // If the material types don't exist, find the highest batch number and increment by 1
+        const maxBatchNumber = await prisma.materialBatch.findFirst({
+            where: { course_id: existingCourse.course_id },
+            orderBy: { batch_number: 'desc' },
+            take:1
+        });
+        const newBatchNumber = maxBatchNumber ? maxBatchNumber.batch_number + 1 : 1;
+
+        // Create a new material batch with the incremented batch number
+        const newMaterialBatch = await prisma.materialBatch.create({
+            data: {
+                course_id: existingCourse.course_id,
+                batch_number: newBatchNumber,
+                material_types
+            }
+        });
+
+        // Return the response with the newly created material batch
+        res.json({ 
+            material_types: newMaterialBatch.material_types,
+            batch_number: newMaterialBatch.batch_number,
+            course: existingCourse
+        });
     } catch (error) {
-        console.error('Error fetching user course info:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Error updating or creating course and material batch:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
+
 // Create a new user
-adminActions.post('/user', async (req, res) => {
-    const newUser = req.body;
-    const user = await prisma.user.create({
-        data: newUser
+adminActions.post('/user',upload.single('profile_image'), checkSchema(registerSchema), async (req, res) => {
+    const errors = validationResult(req)
+    if(!errors.isEmpty()) {
+        return res.status(400).send({ status: "fail", errors})
+    }
+    const { username, email, password, profile_image } = req.body;
+  
+    // Check if username or email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: {
+          email : email
+      }
     });
-    res.json(user);
+  
+    if (existingUser) {
+      return res.status(400).json({ message: "Email  already exists" });
+    }
+  
+    // Hash the password
+    const hashedPassword = await generateHashedPassword(password);
+  
+    try {
+
+      let profileImagePath = null;
+
+      if (req.file) {
+          // If a file is uploaded, save its path
+          profileImagePath = req.file.path;
+      } else {
+          profileImagePath = "";
+      }
+
+      // Create the user
+      const newUser = await prisma.user.create({
+        data: {
+          username,
+          email,
+          password: hashedPassword,
+          profile_image: profileImagePath
+        }
+      });
+      res.status(201).json({ message: "User registered successfully"});
+    } catch (error) {
+      console.error("Error registering user:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
 });
 
 //updating a user
-adminActions.put('/user/:user_id', async (req, res) => {
-    const { user_id } = req.params;
-    const { newDetails } = req.body;
-
+adminActions.patch('/users/:userId', async (req, res) => {
     try {
-        const updated = await prisma.user.update({
-            where: { id: parseInt(user_id) },
-            data: { newDetails }
-        });
-        res.json(updated);
-    } catch (error) {
-        console.error('Error modifying score:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-})
+        const userId = parseInt(req.params.userId);
+        const { username, email, password, profile_image } = req.body;
 
-adminActions.delete('/user/user_id', async (req, res) => {
-    const { user_id } = req.params;
-
-    try {
-        // Delete the user
-        await prisma.user.delete({
-            where: { user_id: parseInt(user_id) }
-        });
-
-        res.json({ message: 'User deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-})
-
-adminActions.patch('/user/:user_id', async (req, res) => {
-    const { user_id } = req.params;
-    const { username, email } = req.body;
-
-    try {
-        // Update the specified fields of the user
         const updatedUser = await prisma.user.update({
-            where: { user_id: parseInt(user_id) },
-            data: { username, email }
+            where: { user_id: userId },
+            data: {
+                username,
+                email,
+                password,
+                profile_image
+            }
         });
 
         res.json(updatedUser);
     } catch (error) {
         console.error('Error updating user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
-
-//courses table
-
-// Create a new course
-adminActions.post('/courses', async (req, res) => {
-    const newCourse = req.body;
-    const course = await prisma.course.create({
-        data: newCourse
-    });
-    res.json(course);
-});
-adminActions.put('/courses/: course_id', async (req, res) => {
-    const { course_id } = req.params;
-    const { newDetails } = req.body;
-
-    try {
-        const updated = await prisma.course.update({
-            where: { id: parseInt(course_id) },
-            data: { newDetails }
-        });
-        res.json(updated);
-    } catch (error) {
-        console.error('Error modifying score:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-})
-adminActions.delete('/courses/: course_id', async (req, res) => {
-    const { course_id } = req.params;
-
-    try {
-        // Delete the user
-        await prisma.user.delete({
-            where: { user_id: parseInt(course_id) }
-        });
-
-        res.json({ message: 'User deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-})
-adminActions.patch('/courses/: course_id', async (req, res) => {
-    const { course_id } = req.params;
-    const { course_name, instructor, duration } = req.body;
-
-    try {
-        // Update the specified fields of the user
-        const updatedUser = await prisma.user.update({
-            where: { user_id: parseInt(course_id) },
-            data: { course_name, instructor, duration }
-        });
-
-        res.json(updatedUser);
-    } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
-
-
-
-//assessment table
-adminActions.delete('/assessment/:assessment_id', async (req, res) => {
-    const { assessment_id } = req.params;
-    try {
-        // Delete the user
-        await prisma.user_Assessment.delete({
-            where: { user_id: parseInt(assessment_id) }
-        });
-
-        res.json({ message: 'User deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-})
-
-adminActions.patch('/assessment/:assessment_id ', async (req, res) => {
-    const { assessment_id } = req.params;
-    const { score } = req.body;
-
-    try {
-        // Update the specified fields of the user
-        const updatedUser = await prisma.user_Assessment.update({
-            where: { user_id: parseInt(assessment_id) },
-            data: { score }
-        });
-
-        res.json(updatedUser);
-    } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
-
-//discussion table
-
-
-adminActions.post('/discussion', async (req, res) => {
-    const data = req.body;
-    const newdata = await prisma.discussion.create({
-        data: data
-    });
-    res.json(newdata);
-});
-
-adminActions.delete('/discussion/:discussion_id', async (req, res) => {
-    const { discussion_id } = req.params;
-    try {
-        // Delete the user
-        await prisma.discussion.delete({
-            where: { user_id: parseInt(discussion_id) }
-        });
-
-        res.json({ message: 'User deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-})
-
-adminActions.patch('/discussion/:discussion_id', async (req, res) => {
-    const { discussion_id } = req.params;
-    const { content } = req.body;
-
-    try {
-        // Update the specified fields of the user
-        const updated = await prisma.discussion.update({
-            where: { user_id: parseInt(discussion_id) },
-            data: { content }
-        });
-
-        res.json(updated);
-    } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
-//coursematerial table
-
-adminActions.post('/coursematerial', async (req, res) => {
-    const data = req.body;
-    const newdata = await prisma.courseMaterial.create({
-        data: data
-    });
-    res.json(newdata);
-});
-
-adminActions.put('/coursematerial/:material_id', async (req, res) => {
-    const { material_id } = req.params;
-    const { newDetails } = req.body;
-
-    try {
-        const updated = await prisma.courseMaterial.update({
-            where: { id: parseInt(material_id) },
-            data: { newDetails }
-        });
-        res.json(updated);
-    } catch (error) {
-        console.error('Error modifying score:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-})
-
-adminActions.delete('/coursematerial/:material_id', async (req, res) => {
-    const { material_id } = req.params;
-
-    try {
-        // Delete the user
-        await prisma.courseMaterial.delete({
-            where: { material_id: parseInt(material_id) }
-        });
-
-        res.json({ message: 'User deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-})
-
-adminActions.patch('/coursematerial/:material_id', async (req, res) => {
-    const { material_id } = req.params;
-    const { material_url, material_type } = req.body;
-
-    try {
-        // Update the specified fields of the user
-        const updated = await prisma.courseMaterial.update({
-            where: { material_id: parseInt(material_id) },
-            data: { material_url, material_type }
-        });
-
-        res.json(updated);
-    } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
-
-//CourseEnrollment table
-
-adminActions.patch('/courseenrolment/:enrollment_id ', async (req, res) => {
-    const { enrollment_id } = req.params;
-    const { progress } = req.body;
-
-    try {
-        // Update the specified fields of the user
-        const updated = await prisma.courseEnrollment.update({
-            where: { enrollment_id: parseInt(enrollment_id) },
-            data: { progress }
-        });
-
-        res.json(updated);
-    } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
 export default adminActions;
-
-
