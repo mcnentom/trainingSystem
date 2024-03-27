@@ -128,10 +128,33 @@ adminActions.post('/courses', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+adminActions.get('/courses', async (req, res) => {
+    try {
+        const courses = await prisma.course.findMany({
+            select: {
+                course_id: true,
+                course_name: true,
+                duration: true,
+                progress: true,
+                materialBatches: {
+                    select: {
+                        material_types: true,
+                        batch_number: true
+                    }
+                }
+            }
+        });
+
+        res.json(courses);
+    } catch (error) {
+        console.error('Error fetching courses:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 
 // Create a new user
-adminActions.post('/user',upload.single('profile_image'), checkSchema(registerSchema), async (req, res) => {
+adminActions.post('/register',upload.single('profile_image'), checkSchema(registerSchema), async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()) {
         return res.status(400).send({ status: "fail", errors})
@@ -201,5 +224,88 @@ adminActions.patch('/users/:userId', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+adminActions.delete('/users/:email', async (req, res) => {
+    const email = req.params.email
+    
+    try {
+      
+        const user = await prisma.user.findUnique({
+            where: {
+               email:email
+            },
+            include: {
+                taught_courses: true, 
+                certification: true  
+            }
+        });
+
+        // If user not found, return 404
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Delete the user
+        await prisma.user.delete({
+            where: {
+                 email:email
+            }
+        });
+
+        // Return success response
+        res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        // Handle error as needed
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Route to delete a course
+adminActions.delete('/courses/:courseId', async (req, res) => {
+    const courseId = parseInt(req.params.courseId);
+    try {
+        // Delete material batches associated with the course
+        await prisma.materialBatch.deleteMany({
+            where: {
+                course_id: courseId
+            }
+        });
+
+        // Delete the course after deleting material batches
+        await prisma.course.delete({
+            where: {
+                course_id: courseId
+            }
+        });
+
+        return res.status(200).json({ message: 'Course and associated material batches deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting course:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+adminActions.post('/assessments', async (req, res) => {
+    try {
+      const { question, choices, correctChoice, score, courseId } = req.body;
+      const newAssessment = await prisma.assessment.create({
+        data: {
+          question,
+          choices: choices.join(', '), // Convert choices array to string for storage
+          correctChoice,
+          score,
+          course: {
+            connect: { course_id: courseId },
+          },
+        },
+      });
+      res.status(201).json(newAssessment);
+    } catch (error) {
+      console.error('Error creating assessment:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
 
 export default adminActions;

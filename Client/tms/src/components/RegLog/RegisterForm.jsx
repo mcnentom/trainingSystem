@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styling.scss';
+// import { useUser } from '../UserContext'
+// import UserProfile from '../Courses/UserProfile';
 
 function RegisterForm() {
     const [username, setUsername] = useState('');
@@ -11,7 +13,7 @@ function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
-
+    // const { setUser } = useUser();
     const handleRegistration = async (e) => {
         e.preventDefault();
         try {
@@ -19,7 +21,7 @@ function RegisterForm() {
             formData.append('username', username);
             formData.append('email', email);
             formData.append('password', password);
-            formData.append('profile_image', profileImage); // Append the selected image to the form data
+            formData.append('profile_image', profileImage);
 
             const response = await fetch('http://localhost:3000/auth/register', {
                 method: 'POST',
@@ -27,7 +29,10 @@ function RegisterForm() {
             });
 
             if (response.ok) {
+                const data = await response.json();
+                const { username } = data;
                 navigate('/login');
+                // setUser(username)
             } else {
                 const errorData = await response.json();
                 alert(errorData.errors.errors[0].msg);
@@ -88,6 +93,7 @@ function RegisterForm() {
                     </div>
                 </form>
             </div>
+           
         </div>
     );
 }

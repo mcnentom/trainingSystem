@@ -1,0 +1,28 @@
+.assessment{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1rem;
+    width: 100%;
+
+    .Myform{
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+     label{
+        display: flex;
+        flex-direction: column;
+
+        .question{
+            resize: none;
+            width: 30rem;
+            height: 4rem;
+        }
+     }
+       
+    }
+   
+}

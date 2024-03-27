@@ -15,6 +15,7 @@ model User {
   profile_image     String
   taught_courses Course[]
   certification   Certification[]
+   EnrolledCourses   EnrolledCourse[]
 }
 model Admin {
   admin_id      Int       @id @default(autoincrement())
@@ -35,6 +36,18 @@ model Course {
   materialBatches   MaterialBatch[]
   progress          Float            @default(0) // Progress percentage (0-100)
   certification     Certification[]
+   assessments       Assessment[]
+   EnrolledCourses   EnrolledCourse[]
+}
+
+model EnrolledCourse {
+  id              Int              @id @default(autoincrement())
+  user            User             @relation(fields: [user_id], references: [user_id])
+  user_id         Int
+  course          Course           @relation(fields: [course_id], references: [course_id])
+  course_id       Int
+  enrollmentDate  DateTime         @default(now())
+  score            Float           @default(0)
 }
 
 model MaterialBatch {
@@ -44,12 +57,21 @@ model MaterialBatch {
   batch_number    Int            // Batch number (1-5)
   material_types  String         @db.Text
 }
-
+model Message {
+  id      Int      @id @default(autoincrement())
+  room    String
+  author  String
+  message String
+  time    DateTime @default(now())
+}
 // UserAssessment model to represent user assessments (e.g., quizzes, exams)
-model User_Assessment {
-  assessment_id     Int          @id @default(autoincrement())
-  assessment_type   String       // Type of assessment
-  score             Float        // Score obtained by the user
+model Assessment {
+  id               Int       @id @default(autoincrement())
+  question         String
+  choices          String
+  correctChoice    Int       // Index of the correct choice in the 'choices' array
+  course           Course    @relation(fields: [course_id], references: [course_id])
+  course_id        Int
 }
 // Certification model to represent user certifications
 model Certification {

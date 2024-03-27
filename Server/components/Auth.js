@@ -122,7 +122,7 @@ AuthRouter.post('/register', upload.single('profile_image'), checkSchema(registe
         const token = generateToken(user.id, email, 'user');
         req.session.user = user;
         res.cookie('auth_token', token);
-        return res.status(200).json({ message: 'User logged in successfully', token, userType: 'user' });
+        return res.status(200).json({ message: 'User logged in successfully', userId: user.user_id, token, userType: 'user' });
     }
 
     // Check if the password is correct for the admin
@@ -138,6 +138,18 @@ AuthRouter.post('/register', upload.single('profile_image'), checkSchema(registe
     res.cookie('auth_token', token);
     res.status(200).json({ message: 'Admin logged in successfully', token, userType: 'admin' });
 });
+
+AuthRouter.post('/logout', (req, res) => {
+ 
+  req.session.destroy((err) => {
+      if (err) {
+          console.error('Error destroying session:', err);
+          return res.status(500).json({ message: 'Internal server error' });
+      }
+      res.status(200).json({ message: 'Logged out successfully' });
+  });
+});
+
 
 // AuthRouter.use(authMiddleware);
 

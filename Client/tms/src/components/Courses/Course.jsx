@@ -8,9 +8,10 @@ import image6 from '../../assets/Background.jpg'
 import image7 from '../../assets/GetStarted.jpg'
 import image8 from '../../assets/andrea.png'
 import image9 from '../../assets/krasnikova.jpg'
-// import DiscussionForum from '../Discussion/Discussion'
 import { useNavigate } from 'react-router-dom'
 import './Course.scss'
+import Main from './Main'
+
 
 
 const Course = () => {
@@ -19,28 +20,50 @@ const Course = () => {
 
     useEffect(() => {
         // Fetch course list from the API
-        fetch('http://localhost:3000/userActions/courses') // Assuming this endpoint exists
+        fetch('http://localhost:3000/userActions/courses') 
             .then(response => response.json())
             .then(data => setCourses(data))
             .catch(error => console.error('Error fetching courses:', error));
     }, []);
-
-    const handleEnroll = (courseId) => {
-        navigate(`/content/${courseId}`);
+    const images = [image1, image2, image3, image4, image5, image6, image7, image8, image9];
+    const handleEnroll = async (courseId) => {
+        try {
+            // Navigate to the content page
+            navigate(`/content/${courseId}`);
+    
+            // Post enrollment data to the API
+            const userId = localStorage.getItem('user_id');
+            const response = await fetch('http://localhost:3000/userActions/enrolled', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: parseInt(userId), course_id: courseId }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to enroll in the course');
+            }
+        } catch (error) {
+            console.error('Error enrolling in the course:', error);
+            
+        }
     };
-
     return (
         <div className='course'>
             <h1>Our Esteemed Courses</h1>
+            <div>
+               
+            </div>
             <div className='CoursesDiv'>
-                {courses.map(course => (
+                {courses.map((course, index) => (
                     <div className='myCourse' key={course.course_id}>
-                        {/* <img src=Add image source here alt="" /> */}
+                        <img src={images[index % images.length]} alt={course.course_name}/>
                         <h3>{course.course_name}</h3>
                         <button onClick={() => handleEnroll(course.course_id)}>Enroll</button>
                     </div>
                 ))}
             </div>
+            <Main/>
         </div>
     );
 }

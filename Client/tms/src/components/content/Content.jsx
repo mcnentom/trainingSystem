@@ -22,23 +22,27 @@ const Content = () => {
         }
     };
 
-        const handlePrevBatch = () => {
-            if (currentBatch > 0) {
-                setCurrentBatch(prevBatch => prevBatch - 1);
-            }
-        };
-    
+    const handlePrevBatch = () => {
+        if (currentBatch > 0) {
+            setCurrentBatch(prevBatch => prevBatch - 1);
+        }
+    };
 
-        const handleMarkAsFinished = () => {
-            if (!finishedBatches.includes(currentBatch)) {
-                setFinishedBatches(prevFinishedBatches => [...prevFinishedBatches, currentBatch]);
-                setCourseDetails(prevCourseDetails => ({
-                    ...prevCourseDetails,
-                    progress: prevCourseDetails.progress + 20
-                }));
-            }
-        };
-    
+    const handleMarkAsFinished = () => {
+        if (!finishedBatches.includes(currentBatch)) {
+            setFinishedBatches(prevFinishedBatches => [...prevFinishedBatches, currentBatch]);
+            setCourseDetails(prevCourseDetails => ({
+                ...prevCourseDetails,
+                progress: prevCourseDetails.progress + 20
+            }));
+        }
+    };
+
+    const handleTakeQuiz = () => {
+        // Navigate to assessment page
+        navigate(`/assessment/${courseId}`);
+    };
+
     if (!courseDetails) {
         return <div>Loading...</div>;
     }
@@ -63,14 +67,18 @@ const Content = () => {
                     <li key={index}>{material}</li>
                 ))}
             </ul>
-             <div>
+            <div>
                 <button onClick={handlePrevBatch} disabled={currentBatch === 0}>
                     Prev
                 </button>
                 <button onClick={handleMarkAsFinished}>Mark as Finished</button>
-                <button onClick={handleNextBatch} disabled={currentBatch === materialBatches.length - 1}>
-                    Next
-                </button>
+                {currentBatch === totalBatches - 1 ? (
+                    <button onClick={handleTakeQuiz}>Take a Quiz</button>
+                ) : (
+                    <button onClick={handleNextBatch} disabled={currentBatch === totalBatches - 1}>
+                        Next
+                    </button>
+                )}
             </div>
         </div>
     );
