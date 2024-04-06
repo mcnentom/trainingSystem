@@ -10,6 +10,7 @@ import AssessmentForm from './components/Admin/AssessmentPost';
 import UserAssessment from './components/UserAssessments/UserAssessment';
 import CertificationPage from './components/Score/Certification';
 import ScorePage from './components/Score/Score';
+import Enrollment from './Enrollment/Enrollment';
 
 function App() {
     // const [userId, setUserId] = useState(null);
@@ -28,6 +29,7 @@ function App() {
                     <Route path='/assessment/:courseId' element={<UserAssessment />} />
                     <Route path = '/score/:courseId/:score' element={<ScorePage />} />
                     <Route path = 'certification' element={<CertificationPage/>} />
+                    <Route path='/enrollment/:courseId' element={<Enrollment />} />
                 </Routes>
             </Router>
         </div>

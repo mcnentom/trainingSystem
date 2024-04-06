@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import cozina from '../../assets/cozina1.png'
 
 const CertificationPage = () => {
     const navigate = useNavigate();
     const [fullName, setFullName] = useState('');
     const [showCertificate, setShowCertificate] = useState(false);
 
-    const handleCertificationSubmit = async() => {
+    const handleCertificationSubmit = async () => {
         try {
             const userId = localStorage.getItem('user_id');
             const courseId = localStorage.getItem('course_id');
@@ -20,7 +21,7 @@ const CertificationPage = () => {
                 },
                 body: JSON.stringify({
                     user_id: parseInt(userId),
-                    course_id:parseInt(courseId),
+                    course_id: parseInt(courseId),
                     date_achieved: dateAchieved,
                 }),
             });
@@ -36,12 +37,12 @@ const CertificationPage = () => {
         } catch (error) {
             console.error('Error creating certification:', error);
             setError('An error occurred while creating the certification.');
-            
+
         }
     };
 
-       
-    
+
+
 
     const handleReturnToAssessment = () => {
         navigate(`/course`);
@@ -58,8 +59,12 @@ const CertificationPage = () => {
                 </div>
             ) : (
                 <div>
-                    <p>Congratulations {fullName} on completing the course!</p>
-                    
+                    <div className='heading'>
+                        <img src={cozina} alt="logo" />
+                        <h1>Cozina</h1>
+                    </div>
+                    <p>{dateAchieved}</p>
+                    <p>{fullName}</p>
                     <button onClick={handleReturnToAssessment}>Return to Courses</button>
                 </div>
             )}

@@ -125,7 +125,21 @@ userActions.patch('/updateScore', async (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
   }
 });
+userActions.get('/enrolled/:userId', async(req,res)=>{
+  try {
+    const userId=parseInt(req.params.userId);
+    const enrollment = await prisma.enrolledCourse.findMany({
+      where:{
+        user_id : userId
+      }
+    });
+    res.status(200).json({ message:'User enrolled', enrollment})
+  } catch (error) {
+    res.status(500).json({message:'error in fetching the user enrollent details'})
+  }
+ 
 
+})
 userActions.post('/enrolled', async (req, res) => {
   console.log(req.body);
   try {
