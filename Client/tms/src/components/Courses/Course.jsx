@@ -27,11 +27,11 @@ const Course = () => {
     }, [dispatch]);
 
     const images = [image1, image2, image3, image4, image5, image6, image7, image8, image9];
-    
-    const NavigateToEnroll = async (courseId) => {
+ 
+    const NavigateToEnroll = async (courseId,courseName, courseImage) => {
         try {
             // dispatch(enrollCourse(courseId));
-            navigate(`/enrollment/${courseId}`); 
+            navigate(`/enrollment/${courseId}/${encodeURIComponent(courseName)}/${encodeURIComponent(courseImage)}`); 
         } catch (error) {
             console.error('Error enrolling in the course:', error);
         }
@@ -54,8 +54,10 @@ const Course = () => {
                         <h3>{course.course_name}</h3>
                         {enrollments.find((enrollment) => enrollment.course_id === course.course_id) ?
                             <button onClick={()=>NavigateToContent(course.course_id)}>Continue to course</button> :
-                            <button onClick={() => NavigateToEnroll(course.course_id)}>Enroll</button>
+                            <button onClick={() => NavigateToEnroll(course.course_id, course.course_name,images[index % images.length])}>Enroll</button>
+                            
                         }
+                        
                     </div>
                 ))}
             </div>

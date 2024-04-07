@@ -29,7 +29,7 @@ function App() {
                     <Route path='/assessment/:courseId' element={<UserAssessment />} />
                     <Route path = '/score/:courseId/:score' element={<ScorePage />} />
                     <Route path = 'certification' element={<CertificationPage/>} />
-                    <Route path='/enrollment/:courseId' element={<Enrollment />} />
+                    <Route path='/enrollment/:courseId/:courseName/:courseImage' element={<Enrollment />} />
                 </Routes>
             </Router>
         </div>
