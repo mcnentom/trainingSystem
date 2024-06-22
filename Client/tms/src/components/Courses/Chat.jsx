@@ -1,10 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import PropTypes from 'prop-types';
 import ScrollToBottom from "react-scroll-to-bottom";
 
 function Chat({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
   const [sentMessages, setSentMessages] = useState(new Set());
+
+  // Props validation
+  Chat.propTypes = {
+    socket: PropTypes.object.isRequired,
+    username: PropTypes.string.isRequired,
+    room: PropTypes.string.isRequired,
+  };
 
   useEffect(() => {
     // Load stored messages when component mounts
@@ -31,21 +39,20 @@ function Chat({ socket, username, room }) {
       setSentMessages((prevSentMessages) => new Set(prevSentMessages.add(currentMessage)));
     }
   };
+
   useEffect(() => {
-    socket.on("receive_message", (data) => {
+    const handleReceiveMessage = (data) => {
       setMessageList((prevMessages) => [...prevMessages, data]);
       // Store messages in localStorage
-      localStorage.setItem(
-        "messageList",
-        JSON.stringify([...messageList, data])
-      );
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      localStorage.setItem("messageList", JSON.stringify([...messageList, data]));
+    };
+
+    socket.on("receive_message", handleReceiveMessage);
 
     return () => {
-      socket.off();
-    }
-  }, [socket]);
+      socket.off("receive_message", handleReceiveMessage);
+    };
+  }, [socket, messageList]);
   
 
   return (

@@ -1,4 +1,4 @@
-import React,{useEffect} from 'react'
+import {useEffect} from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Home.scss'
 import GetStarted from '../../assets/GetStarted.jpg'
@@ -32,7 +32,7 @@ const Home = () => {
                 <h1>Cozina</h1>
                 <button onClick={navigateTo} className='btn'>Login</button>
             </nav>
-            <h2>Learn how to become an Efficient: <span className='courses'></span></h2>
+            <h1>Learn how to become an Efficient: <span className='courses'></span></h1>
             
             <div className='description'>
                 <div className='content'>
@@ -57,10 +57,10 @@ const Home = () => {
                     <span>
                         <img src={Daisy} alt="Diasy" />
                         <p>
-                            "Ullamco nulla magna proident reprehenderit tempor mollit ullamco ea veniam.Non ut dolor cillum
+                            Ullamco nulla magna proident reprehenderit tempor mollit ullamco ea veniam.Non ut dolor cillum
                             minim incididunt veniam nostrud qui enim. Aute id magna labore ipsum do cupidatat esse amet dolor
                             nisi occaecat commodo occaecat deserunt. Esse aute elit veniam tempor aliquip occaecat magna.
-                            Do elit commodo in mollit consequat irure eu labore."
+                            Do elit commodo in mollit consequat irure eu labore.
                         </p>
                         <br />
                         <p>Diasy p.</p>
@@ -68,8 +68,8 @@ const Home = () => {
                     <span>
                         <img src={andrea} alt="andrea" />
                         <p>
-                            "Reprehenderit excepteur nisi Lorem eiusmod qui esse tempor cupidatat officia occaecat officia. Ex ut ex
-                            consectetur voluptate. Adipisicing Lorem quis aliquip cupidatat sit occaecat enim sunt amet ullamco."
+                            Reprehenderit excepteur nisi Lorem eiusmod qui esse tempor cupidatat officia occaecat officia. Ex ut ex
+                            consectetur voluptate. Adipisicing Lorem quis aliquip cupidatat sit occaecat enim sunt amet ullamco.
                         </p>
                         <br />
                         <p>Andrea C.</p>
@@ -77,9 +77,9 @@ const Home = () => {
                     <span>
                         <img src={kras} alt="kreas" />
                         <p>
-                            "Veniam do non qui reprehenderit anim nostrud cupidatat anim exercitation commodo voluptate excepteur do.
+                            Veniam do non qui reprehenderit anim nostrud cupidatat anim exercitation commodo voluptate excepteur do.
                             Duis ipsum occaecat est nulla aliquip qui anim incididunt reprehenderit. Consectetur consequat occaecat non
-                            incididunt culpa officia adipisicing qui."
+                            incididunt culpa officia adipisicing qui.
                         </p>
                         <br />
                         <p>Krais T.</p>
