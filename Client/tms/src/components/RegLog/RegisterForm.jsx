@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styling.scss';
 // import { useUser } from '../UserContext'
@@ -31,6 +31,7 @@ function RegisterForm() {
             if (response.ok) {
                 const data = await response.json();
                 const { username } = data;
+                
                 navigate('/login');
                 // setUser(username)
             } else {
