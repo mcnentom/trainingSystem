@@ -32,7 +32,9 @@ function RegisterForm() {
                 const data = await response.json();
                 const { username } = data;
                 
+                
                 navigate('/login');
+                return username;
                 // setUser(username)
             } else {
                 const errorData = await response.json();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const Content = () => {
@@ -7,8 +7,8 @@ const Content = () => {
     const [courseDetails, setCourseDetails] = useState(null);
     const [currentBatch, setCurrentBatch] = useState(0);
     const [finishedBatches, setFinishedBatches] = useState([]);
-    const [showContent, setShowContent] = useState(false);
-    const [enrolled, setEnrolled] = useState(false);
+    // const [showContent, setShowContent] = useState(false);
+    // const [enrolled, setEnrolled] = useState(false);
 
     useEffect(() => {
         // Fetch course details from the API based on the courseId
@@ -20,25 +20,26 @@ const Content = () => {
             })
             .catch(error => console.error('Error fetching course details:', error));
     }, [courseId]);
-    const handleEnrollUser = async (courseId) => {
-        try {
-            // Post enrollment data to the API
-            const userId = localStorage.getItem('user_id');
-            const response = await fetch('http://localhost:3000/userActions/enrolled', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ user_id: parseInt(userId), course_id: parseInt(courseId) }),
-            });
-            if (!response.ok) {
-                throw new Error('Failed to enroll in the course');
-            }
-            setShowContent(true);
-        } catch (error) {
-            console.error('Error in posting data', error);
-        }
-    }
+    // const handleEnrollUser = async (courseId) => {
+    //     try {
+    //         // Post enrollment data to the API
+    //         const userId = localStorage.getItem('user_id');
+    //         const response = await fetch('http://localhost:3000/userActions/enrolled', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({ user_id: parseInt(userId), course_id: parseInt(courseId) }),
+    //         });
+    //         if (!response.ok) {
+    //             throw new Error('Failed to enroll in the course');
+    //         }
+    //         setShowContent(true);
+
+    //     } catch (error) {
+    //         console.error('Error in posting data', error);
+    //     }
+    // }
     const handleNextBatch = () => {
         if (currentBatch < courseDetails.materialBatches.length - 1) {
             setCurrentBatch(prevBatch => prevBatch + 1);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styling.scss';
 
@@ -79,7 +79,7 @@ function LoginForm() {
                     </div>
                     <button type='submit'>Login</button>
                     <div className='signUp'>
-                        <p>Don't have an account?</p>
+                        <p>Do not have an account?</p>
                         <button onClick={navigateTo}>Sign Up</button>
                     </div>
                 </form>

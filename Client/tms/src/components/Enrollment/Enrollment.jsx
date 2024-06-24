@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-import { enrollCourse } from '../Redux/Fetch';
+import { enrollCourse } from '../../Redux/Fetch';
 import { useDispatch } from 'react-redux';
 import { BiChevronDown } from "react-icons/bi";
 import { BiChevronUp } from "react-icons/bi";

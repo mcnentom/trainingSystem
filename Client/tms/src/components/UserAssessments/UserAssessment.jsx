@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const AssessmentPage = () => {
@@ -44,6 +44,7 @@ const AssessmentPage = () => {
             setScore(newScore);
             // Route to ScorePage
             navigate(`/score/${courseId}/${newScore}`);
+            console(score);
         } catch (error) {
             console.error('Error updating score:', error);
         }

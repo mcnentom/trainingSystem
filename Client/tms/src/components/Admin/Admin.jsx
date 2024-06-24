@@ -81,6 +81,7 @@ function AdminDashboard() {
             setNewCourseName('');
             setNewDuration('');
             setNewMaterialTypes([]);
+            return data;
         } catch (error) {
             console.error('Error adding course:', error);
         }
@@ -309,7 +310,7 @@ function AdminDashboard() {
                 </div>
             </div>
 
-
+            <AssessmentForm />
         </div>
     );
 }

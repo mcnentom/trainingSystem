@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import cozina from '../../assets/cozina1.png'
+import cozina from '../../assets/cozina1.png';
 
 const CertificationPage = () => {
     const navigate = useNavigate();
     const [fullName, setFullName] = useState('');
     const [showCertificate, setShowCertificate] = useState(false);
+    const [error, setError] = useState(null);
+    const [dateAchieved, setDateAchieved] = useState('');
 
     const handleCertificationSubmit = async () => {
         try {
             const userId = localStorage.getItem('user_id');
             const courseId = localStorage.getItem('course_id');
-            const dateAchieved = new Date().toISOString();
+            const currentDateAchieved = new Date().toISOString();
 
             // Make a POST request to the API endpoint to create a new certification
             const response = await fetch('http://localhost:3000/userActions/certifications', {
@@ -22,27 +24,25 @@ const CertificationPage = () => {
                 body: JSON.stringify({
                     user_id: parseInt(userId),
                     course_id: parseInt(courseId),
-                    date_achieved: dateAchieved,
+                    date_achieved: currentDateAchieved,
                 }),
             });
 
             if (response.ok) {
                 // Certification created successfully
+                setDateAchieved(currentDateAchieved);
                 setShowCertificate(true);
             } else {
                 // Handle error response
                 const errorMessage = await response.text();
                 console.log(errorMessage);
+                setError('Failed to create certification: ' + errorMessage);
             }
         } catch (error) {
             console.error('Error creating certification:', error);
             setError('An error occurred while creating the certification.');
-
         }
     };
-
-
-
 
     const handleReturnToAssessment = () => {
         navigate(`/course`);
@@ -56,6 +56,7 @@ const CertificationPage = () => {
                     <label>Full Name:</label>
                     <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
                     <button onClick={handleCertificationSubmit}>Submit</button>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
                 </div>
             ) : (
                 <div>
