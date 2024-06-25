@@ -10,7 +10,7 @@ import AssessmentForm from './components/Admin/AssessmentPost';
 import UserAssessment from './components/UserAssessments/UserAssessment';
 import CertificationPage from './components/Score/Certification';
 import ScorePage from './components/Score/Score';
-import Enrollment from './Enrollment/Enrollment';
+import Enrollment from './components/Enrollment/Enrollment';
 
 function App() {
     // const [userId, setUserId] = useState(null);

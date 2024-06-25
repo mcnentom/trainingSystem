@@ -23,6 +23,7 @@ function AdminDashboard() {
     const handleTabClick = (tab) => {
         setActiveTab(tab);
     };
+
     async function fetchData() {
         try {
             const response = await axios.get('http://localhost:3000/adminActions/users',
@@ -167,7 +168,9 @@ function AdminDashboard() {
                         <li onClick={() => handleTabClick('user')} className='mylist'>User Management</li>
                         <li onClick={() => handleTabClick('course')} className='mylist'>Course Management</li>
                         <li onClick={() => handleTabClick('content')} className='mylist'>User Registration</li>
-                        <li onClick={handleNavClick} className='mylist'>Assessments Management</li>
+                        <li onClick={() => {
+                            handleTabClick('assessment');
+                            handleNavClick() }} className='mylist'>Assessments Management</li>
                     </ul>
                 </div>
                 <div className='content'>
@@ -225,14 +228,14 @@ function AdminDashboard() {
                             <ul>
                                 <h2>Course Management</h2>
 
-                                <form onSubmit={addCourse}>
+                                <form onSubmit={addCourse} className='CourseForm'>
                                     <label>Course Name:</label>
                                     <input type="text" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} />
                                     <label>Duration:</label>
-                                    <input type="text" value={newDuration} onChange={(e) => setNewDuration(e.target.value)} />
+                                    <input type="text" value={newDuration} onChange={(e) => setNewDuration(e.target.value)} className='DurationInput'/>
                                     {/* Assuming newMaterialTypes is an array state */}
                                     <label>Material Types:</label>
-                                    <textarea value={newMaterialTypes} onChange={(e) => setNewMaterialTypes(e.target.value)} />
+                                    <textarea value={newMaterialTypes} onChange={(e) => setNewMaterialTypes(e.target.value)} className='MaterialTypesField'/>
                                     <button type="submit">Add Course</button>
                                 </form>
                                 <table>
@@ -271,7 +274,7 @@ function AdminDashboard() {
                     )}
 
                     {activeTab === 'content' && (
-                        <div>
+                        <div className='FormDiv'>
                             <h1>Registration</h1>
                             <form onSubmit={handleRegistration} className='formdiv'>
                                 <label>Username:</label>
@@ -290,11 +293,12 @@ function AdminDashboard() {
                                     autoComplete="current-password"
 
                                 />
-                                <div>
+                                <div className='CheckBoxDiv'>
                                     <input
                                         type="checkbox"
                                         checked={showPassword}
                                         onChange={() => setShowPassword(!showPassword)}
+                                        className='CheckBox'
                                     />
                                     <label>Show Password</label>
                                 </div>
@@ -307,10 +311,15 @@ function AdminDashboard() {
                             </form>
                         </div>
                     )}
+                    {activeTab ==='assessment' &&(
+                        <div>
+                            <AssessmentForm />
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <AssessmentForm />
+            
         </div>
     );
 }

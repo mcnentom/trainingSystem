@@ -28,7 +28,7 @@ adminActions.get('/users',async (req, res) => {
                         progress: true
                     }
                 },
-                certification: {
+                certifications: {
                     select: {
                         date_achieved: true
                     }

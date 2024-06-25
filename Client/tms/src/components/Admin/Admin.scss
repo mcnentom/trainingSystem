@@ -15,7 +15,7 @@
     .AdminDiv{
         display: grid;
         grid-template-columns: .5fr 1.5fr;
-        width: 100vw;
+        width: fit-content;
         height: 100vh;
         // overflow: hidden;
         // overflow-y: scroll;
@@ -58,14 +58,16 @@
         .content{
             background: #ccc;
             overflow-y: scroll;
+            width: 79vw;
             .heading{
                 margin-bottom: 1rem;
             }
             table {
-                width: 100%;
+                width: 80%;
                 border-collapse: collapse;
                 margin-bottom: 20px;
                 border: 1px solid #ccc;
+                color: #653434;
                 // border-radius: 20px;
                 // box-shadow: 0 2px 40px rgba(0, 0, 0, 0.7);
               }
@@ -97,6 +99,77 @@
               tr:hover {
                 background-color: #f2f2f2;
               }
+              .CourseForm{
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                margin: 1rem;
+                
+                input{
+                  width: 15rem;
+                  height: 2.5rem;
+                  border-radius: .5rem;
+                  outline: none;
+                  border: none;
+                  font-size: 1.4rem;
+                  padding: .2rem;
+                  background: #dc6363;
+                }
+                .DurationInput{
+                  width: 3rem;
+                  padding: .5rem;
+                }
+                .MaterialTypesField{
+                  width: 70%;
+                  height: 15rem;
+                  border-radius: .5rem;
+                  outline: none;
+                  border: none;
+                  font-size: 1.4rem;
+                  padding: .4rem;
+                  background: #653434;
+                }
+              }
+              .FormDiv{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-size: 2rem;
+                // height: fit-content;
+
+                .formdiv{
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  gap: 1rem;
+                  margin: 2rem;
+                  width: fit-content;
+                  box-shadow: 2px 2px 2px #653434;
+                  padding: 1rem;
+                  border-radius: .5rem;
+
+                  input{
+                    height: 2rem;
+                    width: 20rem;
+                    border-radius: .5rem;
+                    outline: none;
+                    border: none;
+                    font-size: 1rem;
+                  }
+                  .CheckBoxDiv{
+                    display: flex;
+                    gap: .3rem;
+                    align-items: center;
+                    .CheckBox{
+                      width: 1rem;
+                      height: 1rem;
+                    }
+                  }
+                  
+                }  
+              }
+            
         }
     }
 }
