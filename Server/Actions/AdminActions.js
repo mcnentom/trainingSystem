@@ -15,13 +15,20 @@ const upload = multer({ dest: 'uploads/' });
 // const __dirname = dirname(__filename);
 const adminActions = Router();
 
-adminActions.get('/users',async (req, res) => {
+adminActions.get('/users', async (req, res) => {
     try {
-        const userDetails = await prisma.user.findMany({
+        // Fetch all users with their enrolled courses and other required details
+        const allUsers = await prisma.user.findMany({
             select: {
+                user_id: true, // We need the user_id to check enrolled courses
                 username: true,
                 email: true,
-               taught_courses: {
+                enrolledCourses: {
+                    select: {
+                        id: true // Just need the ID to check existence
+                    }
+                },
+                taught_courses: {
                     select: {
                         course_name: true,
                         duration: true,
@@ -32,12 +39,31 @@ adminActions.get('/users',async (req, res) => {
                     select: {
                         date_achieved: true
                     }
-                },
-            },
+                }
+            }
         });
 
-        if (!userDetails) {
-            return res.status(404).json({ error: 'No user found' });
+        // Post-process to filter and format the response based on enrollment
+        const userDetails = allUsers.map(user => {
+            if (user.enrolledCourses.length > 0) {
+                // User is enrolled in at least one course
+                return {
+                    username: user.username,
+                    email: user.email,
+                    taught_courses: user.taught_courses,
+                    certifications: user.certifications
+                };
+            } else {
+                // User is not enrolled in any course
+                return {
+                    username: user.username,
+                    email: user.email
+                };
+            }
+        });
+
+        if (userDetails.length === 0) {
+            return res.status(404).json({ error: 'No users found' });
         }
 
         res.json(userDetails);
@@ -46,6 +72,7 @@ adminActions.get('/users',async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 adminActions.post('/courses', async (req, res) => {
     try {
         const { course_name, duration, material_types } = req.body;

@@ -1,11 +1,13 @@
 .App {
-    width: 100vw;
-    height: 100vh;
-    background: #fff;
+    width: fit-content;
+    height: fit-content;
     color: #212121;
     font-family: "Open Sans", sans-serif;
     display: grid;
     place-items: center;
+    position: fixed;
+    right: 2%;
+    top: 5%;
   }
   body {
     margin: 0%;

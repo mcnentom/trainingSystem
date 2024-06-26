@@ -1,7 +1,7 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Admin.scss'
+import './Admin.scss';
 import AssessmentForm from './AssessmentPost';
 
 function AdminDashboard() {
@@ -11,7 +11,7 @@ function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('user');
     const [newCourseName, setNewCourseName] = useState('');
     const [newDuration, setNewDuration] = useState('');
-    const [newMaterialTypes, setNewMaterialTypes] = useState([]);
+    const [newMaterialTypes, setNewMaterialTypes] = useState('');
     const [userCourses, setUserCourses] = useState([]);
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -20,15 +20,14 @@ function AdminDashboard() {
     const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
+
     const handleTabClick = (tab) => {
         setActiveTab(tab);
     };
 
     async function fetchData() {
         try {
-            const response = await axios.get('http://localhost:3000/adminActions/users',
-                { withCredentials: true }
-            );
+            const response = await axios.get('http://localhost:3000/adminActions/users', { withCredentials: true });
             setUserCourseInfo(response.data);
             setLoading(false);
         } catch (error) {
@@ -36,10 +35,10 @@ function AdminDashboard() {
             setLoading(false);
         }
     }
+
     useEffect(() => {
         fetchData();
     }, []);
-
 
     async function fetchCourses() {
         try {
@@ -48,7 +47,6 @@ function AdminDashboard() {
             setUserCourses(coursesData);
         } catch (error) {
             console.error('Error fetching courses:', error);
-
         }
     }
 
@@ -78,10 +76,12 @@ function AdminDashboard() {
             }
 
             const data = await response.json();
+            
 
             setNewCourseName('');
             setNewDuration('');
-            setNewMaterialTypes([]);
+            setNewMaterialTypes('');
+            fetchCourses(); // Refresh course list after adding
             return data;
         } catch (error) {
             console.error('Error adding course:', error);
@@ -103,54 +103,51 @@ function AdminDashboard() {
             });
 
             if (response.ok) {
-                const responseData = await response.json();
-                console.log(responseData);
-
                 setActiveTab('user');
+                setUsername('');
                 setEmail('');
                 setPassword('');
-                setUsername('')
+                setProfileImage(null);
+                fetchData(); // Refresh user list after registration
             } else {
                 const errorData = await response.json();
                 alert(errorData.errors.errors[0].msg);
-
             }
         } catch (error) {
             console.error('Error:', error);
             alert('An error occurred');
         }
     };
+
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         setProfileImage(file);
     };
+
     const handleDeleteUser = async (email) => {
-        console.log('Deleting user with ID:', email);
         try {
             const response = await axios.delete(`http://localhost:3000/adminActions/users/${email}`, { withCredentials: true });
-            console.log(response.data); 
-     
-            fetchData();
+            fetchData(); // Refresh user list after deletion
+            return response;
         } catch (error) {
             console.error('Error deleting user:', error);
-            
         }
     };
-    const handleNavClick = ()=>{
-        navigate('/assessment')
-    }
+
     const handleDeleteCourse = async (courseId) => {
         try {
             const response = await axios.delete(`http://localhost:3000/adminActions/courses/${courseId}`, { withCredentials: true });
-            console.log(response.data); 
-         
-            fetchCourses();
+            fetchCourses(); // Refresh course list after deletion
+            return response;
         } catch (error) {
             console.error('Error deleting course:', error);
-            
         }
     };
-    
+
+    const handleNavClick = () => {
+        navigate('/assessment');
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -168,31 +165,30 @@ function AdminDashboard() {
                         <li onClick={() => handleTabClick('user')} className='mylist'>User Management</li>
                         <li onClick={() => handleTabClick('course')} className='mylist'>Course Management</li>
                         <li onClick={() => handleTabClick('content')} className='mylist'>User Registration</li>
-                        <li onClick={() => {
-                            handleTabClick('assessment');
-                            handleNavClick() }} className='mylist'>Assessments Management</li>
+                        <li onClick={() => { handleTabClick('assessment'); handleNavClick() }} className='mylist'>Assessments Management</li>
                     </ul>
                 </div>
                 <div className='content'>
                     {activeTab === 'user' && (
                         <div>
-                            <ul>
-                                <h1 className='heading'>User Management</h1>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Username</th>
-                                            <th>Email</th>
-                                            <th>Taught Courses</th>
-                                            <th>Certification</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {userCourseInfo.map(user => (
-                                            <tr key={user.username}>
-                                                <td>{user.username}</td>
-                                                <td>{user.email}</td>
-                                                <td>
+                            <h1 className='heading'>User Management</h1>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Taught Courses</th>
+                                        <th>Certifications</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {userCourseInfo.map(user => (
+                                        <tr key={user.username}>
+                                            <td>{user.username}</td>
+                                            <td>{user.email}</td>
+                                            <td>
+                                                {user.taught_courses?.length > 0 ? (
                                                     <table>
                                                         <thead>
                                                             <tr>
@@ -211,65 +207,65 @@ function AdminDashboard() {
                                                             ))}
                                                         </tbody>
                                                     </table>
-                                                </td>
-                                                <td>{user.certification ? user.certification.date_achieved : 'Not certified'}</td>
-                                                <td>
-                                                    <button onClick={() => handleDeleteUser(user.email)}>Delete</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </ul>
+                                                ) : (
+                                                    'None'
+                                                )}
+                                            </td>
+                                            <td>
+                                                {user.certifications?.length > 0 ? (
+                                                    user.certifications.map(cert => (
+                                                        <div key={cert.date_achieved}>
+                                                            {new Date(cert.date_achieved).toLocaleDateString()}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    'None'
+                                                )}
+                                            </td>
+                                            <td>
+                                                <button onClick={() => handleDeleteUser(user.email)}>Delete</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                     {activeTab === 'course' && (
                         <div>
-                            <ul>
-                                <h2>Course Management</h2>
+                            <h2>Course Management</h2>
+                            <form onSubmit={addCourse} className='CourseForm'>
+                                <label>Course Name:</label>
+                                <input type="text" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} required />
 
-                                <form onSubmit={addCourse} className='CourseForm'>
-                                    <label>Course Name:</label>
-                                    <input type="text" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} />
-                                    <label>Duration:</label>
-                                    <input type="text" value={newDuration} onChange={(e) => setNewDuration(e.target.value)} className='DurationInput'/>
-                                    {/* Assuming newMaterialTypes is an array state */}
-                                    <label>Material Types:</label>
-                                    <textarea value={newMaterialTypes} onChange={(e) => setNewMaterialTypes(e.target.value)} className='MaterialTypesField'/>
-                                    <button type="submit">Add Course</button>
-                                </form>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Course Name</th>
-                                            <th>Duration</th>
+                                <label>Duration:</label>
+                                <input type="text" value={newDuration} onChange={(e) => setNewDuration(e.target.value)} required />
 
-                                            {/* <th>Material Types</th>
-                                            <th>Batch Number</th> */}
+                                <label>Material Types:</label>
+                                <textarea value={newMaterialTypes} onChange={(e) => setNewMaterialTypes(e.target.value)} required />
 
+                                <button type="submit">Add Course</button>
+                            </form>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Course Name</th>
+                                        <th>Duration</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {userCourses.map(course => (
+                                        <tr key={course.course_id}>
+                                            <td>{course.course_name}</td>
+                                            <td>{course.duration}</td>
+                                            <td>
+                                                <button onClick={() => handleDeleteCourse(course.course_id)}>Delete</button>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {userCourses.map(course => (
-                                            <tr key={course.course_id}>
-                                                <td>{course.course_name}</td>
-                                                <td>{course.duration}</td>
-                                                {/* <td>
-                {course.materialBatches && course.materialBatches.map(batch => (
-                    <div key={batch.batch_id}>
-                        {batch.material_types} - Batch {batch.batch_number}
-                    </div>
-                ))}
-            </td>
-            <td>{course.batch_number}</td> */}
-                                                <td>
-                                                    <button onClick={() => handleDeleteCourse(course.course_id)}>Delete</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </ul>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
 
