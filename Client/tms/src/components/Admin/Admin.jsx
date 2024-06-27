@@ -177,7 +177,7 @@ function AdminDashboard() {
                                     <tr>
                                         <th>Username</th>
                                         <th>Email</th>
-                                        <th>Taught Courses</th>
+                                        <th>Applied Courses</th>
                                         <th>Certifications</th>
                                         <th>Actions</th>
                                     </tr>
@@ -239,10 +239,10 @@ function AdminDashboard() {
                                 <input type="text" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} required />
 
                                 <label>Duration:</label>
-                                <input type="text" value={newDuration} onChange={(e) => setNewDuration(e.target.value)} required />
+                                <input type="text" value={newDuration} onChange={(e) => setNewDuration(e.target.value)} required className='DurationInput'/>
 
                                 <label>Material Types:</label>
-                                <textarea value={newMaterialTypes} onChange={(e) => setNewMaterialTypes(e.target.value)} required />
+                                <textarea value={newMaterialTypes} onChange={(e) => setNewMaterialTypes(e.target.value)} required className='MaterialTypesField'/>
 
                                 <button type="submit">Add Course</button>
                             </form>
