@@ -1,0 +1,30 @@
+.ContentMainDiv{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    font-size: 1.3rem;
+    gap: 1rem;
+    
+    h2{
+        margin: .5rem;
+    }
+    .ContentDiv{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+
+        .ContentList{
+            list-style: none;
+            margin-bottom: 1rem;
+        }
+        .ContentButtons{
+            display: flex;
+            gap: 1rem;
+            justify-content: space-evenly;
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+        }
+    }
+}

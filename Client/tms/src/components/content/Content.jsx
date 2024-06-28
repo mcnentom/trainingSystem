@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import './Content.scss'
 
 const Content = () => {
     const navigate = useNavigate();
@@ -81,19 +82,19 @@ const Content = () => {
     const currentBatchData = materialBatches[currentBatch];
 
     return (
-        <div>
+        <div className='ContentMainDiv'>
             <h2>{courseDetails.course_name}</h2>
 
-            <div>
+            <div className='ContentDiv'>
                 {currentBatch === 0 && <p>Duration: {courseDetails.duration} days</p>}
                 <p>Progress: {courseDetails.progress} %</p>
-                <h3>Course Content (Batch {currentBatchData.batch_number}):</h3>
-                <ul>
+                <h3>Course Content (Batch {currentBatchData.batch_number})</h3>
+                <ul className='ContentList'>
                     {currentBatchData.material_types.split('. ').map((material, index) => (
                         <li key={index}>{material}</li>
                     ))}
                 </ul>
-                <div>
+                <div className='ContentButtons'>
                     <button onClick={handlePrevBatch} disabled={currentBatch === 0}>
                         Prev
                     </button>
