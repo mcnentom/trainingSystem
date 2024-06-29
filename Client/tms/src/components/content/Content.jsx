@@ -55,13 +55,17 @@ const Content = () => {
 
     const handleMarkAsFinished = () => {
         if (!finishedBatches.includes(currentBatch)) {
+            const totalBatches = courseDetails.materialBatches.length;
+            const progressIncrement = 100 / totalBatches; // Calculate the increment dynamically
+    
             setFinishedBatches(prevFinishedBatches => [...prevFinishedBatches, currentBatch]);
             setCourseDetails(prevCourseDetails => ({
                 ...prevCourseDetails,
-                progress: prevCourseDetails.progress + 20
+                progress: Math.min(prevCourseDetails.progress + progressIncrement, 100) // Ensure progress doesn't exceed 100%
             }));
         }
     };
+    
 
     const handleTakeQuiz = () => {
         // Navigate to assessment page
@@ -80,12 +84,32 @@ const Content = () => {
     }
 
     const currentBatchData = materialBatches[currentBatch];
+    const handleBatchClick = (batchIndex) => {
+        setCurrentBatch(batchIndex)
+    }
 
     return (
         <div className='ContentMainDiv'>
-            <h2>{courseDetails.course_name}</h2>
+            <div className='sideBarDiv'>
+               <ul className='sideBarList'>
+                <h2>Content</h2>
+                {materialBatches.map((batch,index) =>(
+                    <li 
+                    key={index}
+                    className={`batchItem ${index === currentBatch ? 'active' : ''}`}
+                    onClick={()=> handleBatchClick(index)}>
+                        Batch{batch.batch_number}
+                    </li>
+                ))
+
+                }
+               </ul>
+            </div>
+           
 
             <div className='ContentDiv'>
+                <div className='topBackground'></div>
+                <h2>{courseDetails.course_name}</h2>
                 {currentBatch === 0 && <p>Duration: {courseDetails.duration} days</p>}
                 <p>Progress: {courseDetails.progress} %</p>
                 <h3>Course Content (Batch {currentBatchData.batch_number})</h3>
