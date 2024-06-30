@@ -1,0 +1,61 @@
+.certificationMainDiv{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    // height: 100vh;
+    margin-top: 2rem;
+    gap: 1rem;
+    width: 100vw;
+
+    .certificationDetails{
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        border: 2px solid #805a5a;
+        width: 35rem;
+        padding: 1rem;
+        border-radius: 1rem;
+
+        .termsDiv{
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+
+            .clickArrow{
+                width: 2rem;
+                height: 2rem;
+                border-radius: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background: #533838;
+                font-size: 1.5rem;
+                transition: all 1s ease-in;
+            }
+            .clickArrow:hover{
+                transform: scale(1.1);
+                background: #443e77;
+            }
+            
+        }
+        .faqContent{
+            margin-top: 1rem;
+        }
+        .termsContent{
+            margin-top: 1rem;
+        }
+        .NameInputField{
+            width: 25rem;
+            height: 2rem;
+            border: none;
+            background: #443e77;
+            border-radius: .4rem;
+            outline: none;
+            font-size: 1.3rem;
+            padding: .3rem;
+        }
+        
+    }
+}

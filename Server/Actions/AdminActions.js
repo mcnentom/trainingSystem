@@ -75,86 +75,87 @@ adminActions.get('/users', async (req, res) => {
 
 adminActions.post('/courses', async (req, res) => {
     try {
-        const { course_name, duration, material_types } = req.body;
+        const { course_name, duration, material_types, batch_number } = req.body;
 
-        // Check if the course exists in the database
+        // Check if batch_number is provided
+        if (!batch_number) {
+            return res.status(400).json({ error: 'batch_number is required' });
+        }
+
         const existingCourse = await prisma.course.findFirst({
             where: { course_name }
         });
 
         if (!existingCourse) {
-            // If the course does not exist, create a new course
             const newCourse = await prisma.course.create({
                 data: {
                     course_name,
-                    instructor_id: 1, 
+                    instructor_id: 1,
                     duration,
                     progress: 0
                 }
             });
 
-            // Create a new material batch for the new course
             const newMaterialBatch = await prisma.materialBatch.create({
                 data: {
                     course_id: newCourse.course_id,
-                    batch_number: 1,
+                    batch_number,
                     material_types
                 }
             });
 
-            // Return the response with the newly created course and material batch
-            return res.json({ 
-                material_types: newMaterialBatch.material_types,
-                batch_number: newMaterialBatch.batch_number,
-                course: newCourse
+            // Return the new course with material batch info
+            return res.json({
+                course: newCourse,
+                materialBatch: {
+                    batch_number: newMaterialBatch.batch_number,
+                    material_types: newMaterialBatch.material_types
+                }
             });
         }
 
-        // Check if the material types already exist for the course
         const existingMaterialBatch = await prisma.materialBatch.findFirst({
             where: {
                 course_id: existingCourse.course_id,
-                material_types
+                batch_number
             }
         });
 
         if (existingMaterialBatch) {
-            // If the material types already exist, return the existing data
-            return res.json({ 
-                material_types: existingMaterialBatch.material_types,
-                batch_number: existingMaterialBatch.batch_number,
-                course: existingCourse
+            // Return existing course with existing material batch info
+            return res.json({
+                course: existingCourse,
+                materialBatch: {
+                    batch_number: existingMaterialBatch.batch_number,
+                    material_types: existingMaterialBatch.material_types
+                }
             });
         }
 
-        // If the material types don't exist, find the highest batch number and increment by 1
-        const maxBatchNumber = await prisma.materialBatch.findFirst({
-            where: { course_id: existingCourse.course_id },
-            orderBy: { batch_number: 'desc' },
-            take:1
-        });
-        const newBatchNumber = maxBatchNumber ? maxBatchNumber.batch_number + 1 : 1;
-
-        // Create a new material batch with the incremented batch number
         const newMaterialBatch = await prisma.materialBatch.create({
             data: {
                 course_id: existingCourse.course_id,
-                batch_number: newBatchNumber,
+                batch_number,
                 material_types
             }
         });
 
-        // Return the response with the newly created material batch
-        res.json({ 
-            material_types: newMaterialBatch.material_types,
-            batch_number: newMaterialBatch.batch_number,
-            course: existingCourse
+        // Return existing course with new material batch info
+        res.json({
+            course: existingCourse,
+            materialBatch: {
+                batch_number: newMaterialBatch.batch_number,
+                material_types: newMaterialBatch.material_types
+            }
         });
     } catch (error) {
         console.error('Error updating or creating course and material batch:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+
+
 adminActions.get('/courses', async (req, res) => {
     try {
         const courses = await prisma.course.findMany({
@@ -292,26 +293,41 @@ adminActions.delete('/users/:email', async (req, res) => {
 adminActions.delete('/courses/:courseId', async (req, res) => {
     const courseId = parseInt(req.params.courseId);
     try {
-        // Delete material batches associated with the course
-        await prisma.materialBatch.deleteMany({
-            where: {
-                course_id: courseId
-            }
-        });
+        await prisma.$transaction([
+            prisma.materialBatch.deleteMany({
+                where: {
+                    course_id: courseId
+                }
+            }),
+            prisma.certification.deleteMany({
+                where: {
+                    course_id: courseId
+                }
+            }),
+            prisma.assessment.deleteMany({
+                where: {
+                    course_id: courseId
+                }
+            }),
+            prisma.enrolledCourse.deleteMany({
+                where: {
+                    course_id: courseId
+                }
+            }),
+            prisma.course.delete({
+                where: {
+                    course_id: courseId
+                }
+            })
+        ]);
 
-        // Delete the course after deleting material batches
-        await prisma.course.delete({
-            where: {
-                course_id: courseId
-            }
-        });
-
-        return res.status(200).json({ message: 'Course and associated material batches deleted successfully' });
+        return res.status(200).json({ message: 'Course and associated records deleted successfully' });
     } catch (error) {
-        console.error('Error deleting course:', error);
+        console.error('Error deleting course and associated records:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 adminActions.post('/assessments', async (req, res) => {
     try {

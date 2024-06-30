@@ -51,9 +51,10 @@ model MaterialBatch {
   batch_id      Int     @id @default(autoincrement())
   course        Course  @relation(fields: [course_id], references: [course_id])
   course_id     Int
-  batch_number  Int     // Batch number (1-5)
+  batch_number  String
   material_types String @db.Text
 }
+
 
 model Message {
   id      Int      @id @default(autoincrement())

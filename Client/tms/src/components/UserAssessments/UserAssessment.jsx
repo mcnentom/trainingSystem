@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import './UserAssessment.scss'
 
 const AssessmentPage = () => {
     const { courseId } = useParams();
@@ -51,10 +52,11 @@ const AssessmentPage = () => {
     };
 
     return (
-        <div>
+        <div className='userAssessment'>
             <h2>Assessment Page</h2>
+            <div className='assessmentDiv'>
             {assessments.map(assessment => (
-                <div key={assessment.id}>
+                <div key={assessment.id} className='assessmentform'>
                     <p>Question: {assessment.question}</p>
                     {assessment.choices.split(',').map((choice, choiceIndex) => (
                         <label key={choiceIndex}>
@@ -71,6 +73,8 @@ const AssessmentPage = () => {
                 </div>
             ))}
             <button onClick={handleSubmit}>Submit Choices</button>
+            </div>
+            
         </div>
     );
 };

@@ -98,7 +98,7 @@ const Content = () => {
                     key={index}
                     className={`batchItem ${index === currentBatch ? 'active' : ''}`}
                     onClick={()=> handleBatchClick(index)}>
-                        Batch{batch.batch_number}
+                        {batch.batch_number}
                     </li>
                 ))
 
@@ -112,7 +112,7 @@ const Content = () => {
                 <h2>{courseDetails.course_name}</h2>
                 {currentBatch === 0 && <p>Duration: {courseDetails.duration} days</p>}
                 <p>Progress: {courseDetails.progress} %</p>
-                <h3>Course Content (Batch {currentBatchData.batch_number})</h3>
+                <h3>{currentBatchData.batch_number}</h3>
                 <ul className='ContentList'>
                     {currentBatchData.material_types.split('. ').map((material, index) => (
                         <li key={index}>{material}</li>
