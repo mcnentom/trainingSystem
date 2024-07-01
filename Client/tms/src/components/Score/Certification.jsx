@@ -4,6 +4,8 @@ import cozina from "../../assets/cozina1.png";
 import "./Certification.scss";
 import { BiChevronDown } from "react-icons/bi";
 import { BiChevronUp } from "react-icons/bi";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const CertificationPage = () => {
   const navigate = useNavigate();
@@ -12,40 +14,35 @@ const CertificationPage = () => {
   const [error, setError] = useState(null);
   const [dateAchieved, setDateAchieved] = useState("");
   const [faqVisibility, setFaqVisibility] = useState(false);
-  const [ agreedToTerms, setAgreedToTerms]= useState(false)
+  const [agreed, setAgreed] = useState(false); // State to track agreement
 
   const handleCertificationSubmit = async () => {
-    if (!agreedToTerms) {
-        alert("Please agree to our terms to continue.");
-        return;
-      }
+    if (!agreed) {
+      alert("Please agree with our terms to continue.");
+      return;
+    }
+
     try {
       const userId = localStorage.getItem("user_id");
       const courseId = localStorage.getItem("course_id");
       const currentDateAchieved = new Date().toISOString();
 
-      // Make a POST request to the API endpoint to create a new certification
-      const response = await fetch(
-        "http://localhost:3000/userActions/certifications",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user_id: parseInt(userId),
-            course_id: parseInt(courseId),
-            date_achieved: currentDateAchieved,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:3000/userActions/certifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: parseInt(userId),
+          course_id: parseInt(courseId),
+          date_achieved: currentDateAchieved,
+        }),
+      });
 
       if (response.ok) {
-        // Certification created successfully
         setDateAchieved(currentDateAchieved);
         setShowCertificate(true);
       } else {
-        // Handle error response
         const errorMessage = await response.text();
         console.log(errorMessage);
         setError("Failed to create certification: " + errorMessage);
@@ -59,8 +56,35 @@ const CertificationPage = () => {
   const handleReturnToAssessment = () => {
     navigate(`/course`);
   };
+
   const toggleVisibility = () => {
-    setFaqVisibility(prevState => !prevState)
+    setFaqVisibility((prev) => !prev);
+  };
+
+  const handleDownloadPDF = () => {
+    const input = document.querySelector(".CertificatePage");
+    html2canvas(input, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const imgWidth = 210; // Width of A4 in mm
+      const pageHeight = 297; // Height of A4 in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save("certificate.pdf");
+    });
   };
 
   return (
@@ -69,42 +93,31 @@ const CertificationPage = () => {
       {!showCertificate ? (
         <div className="certificationDetails">
           <p>
-            As a registered entity,Cozina complies with high consent to user
+            As a registered entity, Cozina complies with high consent to user
             privacy protection and our terms and conditions. Please do accept
-            our terms and condition and proceed to fill in Your Name{" "}
+            our terms and conditions and proceed to fill in Your Name{" "}
           </p>
           <div>
-            <div onClick={() => toggleVisibility()} className="termsDiv">
-              <span className="clickArrow">
-                {faqVisibility ? (
-                  <BiChevronUp className="icon" />
-                ) : (
-                  <BiChevronDown className="icon" />
-                )}
+            <div onClick={toggleVisibility}>
+              <span>
+                {faqVisibility ? <BiChevronUp className="icon" /> : <BiChevronDown className="icon" />}
               </span>
-              <p>Terms And Conditions</p>
             </div>
-            {faqVisibility && (
-              <p className="termsContent">
-                I agree to terms
-              </p>
-            )}
-            <p className="faqContent">
-              <input
-                type="checkbox"
-                id="termsCheckbox"
-                checked={agreedToTerms}
-                onChange={() => setAgreedToTerms(!agreedToTerms)}
-              />
-              <label htmlFor="termsCheckbox"> I agree to the terms and conditions</label>
-            </p>
+            {faqVisibility && <p>I agree to terms</p>}
           </div>
+          <label>
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+            />
+            I agree to terms and conditions
+          </label>
           <label>Full Name:</label>
           <input
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="NameInputField"
           />
           <button onClick={handleCertificationSubmit}>Submit</button>
           {error && <p style={{ color: "red" }}>{error}</p>}
@@ -118,6 +131,7 @@ const CertificationPage = () => {
           <p>{dateAchieved}</p>
           <p>{fullName}</p>
           <button onClick={handleReturnToAssessment}>Return to Courses</button>
+          <button onClick={handleDownloadPDF}>Download as PDF</button>
         </div>
       )}
     </div>
