@@ -45,6 +45,7 @@ model EnrolledCourse {
   course_id      Int
   enrollmentDate DateTime  @default(now())
   score          Float     @default(0)
+  Certification    Certification?  @relation(fields: [user_id, course_id], references: [user_id, course_id])
 }
 
 model MaterialBatch {
@@ -80,5 +81,6 @@ model Certification {
   course           Course    @relation(fields: [course_id], references: [course_id])
   course_id        Int
   date_achieved    DateTime  // Date when the certification was achieved
+   EnrolledCourse   EnrolledCourse? @relation(fields: [user_id, course_id], references: [user_id, course_id])
 }
 

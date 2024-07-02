@@ -125,21 +125,32 @@ userActions.patch('/updateScore', async (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
   }
 });
-userActions.get('/enrolled/:userId', async(req,res)=>{
+userActions.get('/enrolled/:userId', async (req, res) => {
   try {
-    const userId=parseInt(req.params.userId);
+    const userId = parseInt(req.params.userId);
+    
+    // Fetch enrolled courses along with certification information
     const enrollment = await prisma.enrolledCourse.findMany({
-      where:{
-        user_id : userId
+      where: { user_id: userId },
+      include: {
+        course: true, // Include course information
+        Certification: true // Include certification information
       }
     });
-    res.status(200).json({ message:'User enrolled', enrollment})
-  } catch (error) {
-    res.status(500).json({message:'error in fetching the user enrollent details'})
-  }
- 
 
-})
+    // Map the enrollment data to include the certification flag
+    const enrollmentWithCertification = enrollment.map(enrollment => ({
+      ...enrollment,
+      certification: enrollment.Certification?.date_achieved ? true : false
+    }));
+
+    res.status(200).json({ message: 'User enrolled', enrollment: enrollmentWithCertification });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error in fetching the user enrollment details' });
+  }
+});
+
 userActions.post('/enrolled', async (req, res) => {
   console.log(req.body);
   try {
