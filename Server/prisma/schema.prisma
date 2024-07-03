@@ -6,14 +6,15 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
 model User {
-  user_id        Int             @id @default(autoincrement())
-  username       String
-  email          String          @unique
-  password       String
-  profile_image  String
-  taught_courses Course[]
-  certifications Certification[]
+  user_id         Int              @id @default(autoincrement())
+  username        String
+  email           String           @unique
+  password        String
+  profile_image   String
+  taught_courses  Course[]
+  certifications  Certification[]
   enrolledCourses EnrolledCourse[]
 }
 
@@ -25,37 +26,38 @@ model Admin {
 }
 
 model Course {
-  course_id       Int            @id @default(autoincrement())
+  course_id       Int              @id @default(autoincrement())
   course_name     String
-  instructor      User           @relation(fields: [instructor_id], references: [user_id])
+  instructor      User             @relation(fields: [instructor_id], references: [user_id])
   instructor_id   Int
-  duration        Int            // Duration in days, weeks, etc.
+  duration        Int // Duration in days, weeks, etc.
   materialBatches MaterialBatch[]
-  progress        Float          @default(0) // Progress percentage (0-100)
+  progress        Float            @default(0) // Progress percentage (0-100)
   certifications  Certification[]
   assessments     Assessment[]
   enrolledCourses EnrolledCourse[]
 }
 
 model EnrolledCourse {
-  id             Int       @id @default(autoincrement())
-  user           User      @relation(fields: [user_id], references: [user_id])
+  id             Int            @id @default(autoincrement())
+  user           User           @relation(fields: [user_id], references: [user_id])
   user_id        Int
-  course         Course    @relation(fields: [course_id], references: [course_id])
+  course         Course         @relation(fields: [course_id], references: [course_id])
   course_id      Int
-  enrollmentDate DateTime  @default(now())
-  score          Float     @default(0)
-  Certification    Certification?  @relation(fields: [user_id, course_id], references: [user_id, course_id])
+  enrollmentDate DateTime       @default(now())
+  score          Float          @default(0)
+  certification  Certification? @relation(fields: [user_id, course_id], references: [user_id, course_id])
+
+  @@unique([user_id, course_id])
 }
 
 model MaterialBatch {
-  batch_id      Int     @id @default(autoincrement())
-  course        Course  @relation(fields: [course_id], references: [course_id])
-  course_id     Int
-  batch_number  String
+  batch_id       Int    @id @default(autoincrement())
+  course         Course @relation(fields: [course_id], references: [course_id])
+  course_id      Int
+  batch_number   String
   material_types String @db.Text
 }
-
 
 model Message {
   id      Int      @id @default(autoincrement())
@@ -66,21 +68,22 @@ model Message {
 }
 
 model Assessment {
-  id            Int     @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   question      String
   choices       String
-  correctChoice Int     // Index of the correct choice in the 'choices' array
-  course        Course  @relation(fields: [course_id], references: [course_id])
+  correctChoice Int // Index of the correct choice in the 'choices' array
+  course        Course @relation(fields: [course_id], references: [course_id])
   course_id     Int
 }
 
 model Certification {
-  certification_id Int       @id @default(autoincrement())
-  user             User      @relation(fields: [user_id], references: [user_id])
+  certification_id Int             @id @default(autoincrement())
+  user             User            @relation(fields: [user_id], references: [user_id])
   user_id          Int
-  course           Course    @relation(fields: [course_id], references: [course_id])
+  course           Course          @relation(fields: [course_id], references: [course_id])
   course_id        Int
-  date_achieved    DateTime  // Date when the certification was achieved
-   EnrolledCourse   EnrolledCourse? @relation(fields: [user_id, course_id], references: [user_id, course_id])
-}
+  date_achieved    DateTime // Date when the certification was achieved
+  EnrolledCourse   EnrolledCourse?
 
+  @@unique([user_id, course_id])
+}
