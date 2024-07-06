@@ -134,14 +134,14 @@ userActions.get('/enrolled/:userId', async (req, res) => {
       where: { user_id: userId },
       include: {
         course: true, // Include course information
-        Certification: true // Include certification information
+        certification: true // Include certification information
       }
     });
 
     // Map the enrollment data to include the certification flag
     const enrollmentWithCertification = enrollment.map(enrollment => ({
       ...enrollment,
-      certification: enrollment.Certification?.date_achieved ? true : false
+      certification: enrollment.certification?.date_achieved ? true : false
     }));
 
     res.status(200).json({ message: 'User enrolled', enrollment: enrollmentWithCertification });

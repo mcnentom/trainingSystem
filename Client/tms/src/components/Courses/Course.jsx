@@ -48,18 +48,24 @@ const Course = () => {
         <div className='course'>
             <h1>Our Esteemed Courses</h1>
             <div className='CoursesDiv'>
-                {coursesData.map((course, index) => (
-                    <div className='myCourse' key={course.course_id}>
-                        <img src={images[index % images.length]} alt={course.course_name} />
-                        <h3>{course.course_name}</h3>
-                        {enrollments.find((enrollment) => enrollment.course_id === course.course_id) ?
-                            <button onClick={()=>NavigateToContent(course.course_id)}>Continue to course</button> :
-                            <button onClick={() => NavigateToEnroll(course.course_id, course.course_name,images[index % images.length])}>Enroll</button>
-                            
-                        }
-                        
-                    </div>
-                ))}
+                {coursesData.map((course, index) => {
+                    const enrollment = enrollments.find((enroll) => enroll.course_id === course.course_id);
+                    return (
+                        <div className='myCourse' key={course.course_id}>
+                            <img src={images[index % images.length]} alt={course.course_name} />
+                            <h3>{course.course_name}</h3>
+                            {enrollment ? (
+                                enrollment.certification ? (
+                                    <button>Finished</button>
+                                ) : (
+                                    <button onClick={() => NavigateToContent(course.course_id)}>Continue to course</button>
+                                )
+                            ) : (
+                                <button onClick={() => NavigateToEnroll(course.course_id, course.course_name, images[index % images.length])}>Enroll</button>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
             <Main />
         </div>
