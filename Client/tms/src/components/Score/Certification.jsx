@@ -1,20 +1,20 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import cozina from "../../assets/cozina1.png";
 import "./Certification.scss";
-import { BiChevronDown } from "react-icons/bi";
-import { BiChevronUp } from "react-icons/bi";
+import { BiChevronDown, BiChevronUp } from "react-icons/bi";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 const CertificationPage = () => {
+  const { courseId } = useParams(); // Use useParams to get courseId
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [showCertificate, setShowCertificate] = useState(false);
   const [error, setError] = useState(null);
   const [dateAchieved, setDateAchieved] = useState("");
   const [faqVisibility, setFaqVisibility] = useState(false);
-  const [agreed, setAgreed] = useState(false); // State to track agreement
+  const [agreed, setAgreed] = useState(false);
 
   const handleCertificationSubmit = async () => {
     if (!agreed) {
@@ -24,7 +24,6 @@ const CertificationPage = () => {
 
     try {
       const userId = localStorage.getItem("user_id");
-      const courseId = localStorage.getItem("course_id");
       const currentDateAchieved = new Date().toISOString();
 
       const response = await fetch("http://localhost:3000/userActions/certifications", {
@@ -34,7 +33,7 @@ const CertificationPage = () => {
         },
         body: JSON.stringify({
           user_id: parseInt(userId),
-          course_id: parseInt(courseId),
+          course_id: parseInt(courseId), // Use courseId from params
           date_achieved: currentDateAchieved,
         }),
       });
@@ -44,11 +43,9 @@ const CertificationPage = () => {
         setShowCertificate(true);
       } else {
         const errorMessage = await response.text();
-        console.log(errorMessage);
         setError("Failed to create certification: " + errorMessage);
       }
     } catch (error) {
-      console.error("Error creating certification:", error);
       setError("An error occurred while creating the certification.");
     }
   };
@@ -67,8 +64,8 @@ const CertificationPage = () => {
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
 
-      const imgWidth = 210; // Width of A4 in mm
-      const pageHeight = 297; // Height of A4 in mm
+      const imgWidth = 210;
+      const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
@@ -92,19 +89,11 @@ const CertificationPage = () => {
       <h2>Certification</h2>
       {!showCertificate ? (
         <div className="certificationDetails">
-          <p>
-            As a registered entity, Cozina complies with high consent to user
-            privacy protection and our terms and conditions. Please do accept
-            our terms and conditions and proceed to fill in Your Name{" "}
-          </p>
-          <div>
-            <div onClick={toggleVisibility}>
-              <span>
-                {faqVisibility ? <BiChevronUp className="icon" /> : <BiChevronDown className="icon" />}
-              </span>
-            </div>
-            {faqVisibility && <p>I agree to terms</p>}
+          <p>As a registered entity, Cozina complies with high consent to user privacy protection and our terms and conditions. Please do accept our terms and conditions and proceed to fill in Your Name.</p>
+          <div onClick={toggleVisibility}>
+            <span>{faqVisibility ? <BiChevronUp className="icon" /> : <BiChevronDown className="icon" />}</span>
           </div>
+          {faqVisibility && <p>I agree to terms</p>}
           <label>
             <input
               type="checkbox"

@@ -44,6 +44,15 @@ const Course = () => {
         }
     }
 
+    const navigateToCertification = async(courseId)=>{
+        try {
+            navigate(`/certification/${courseId}`)
+        } catch (error) {
+            console.error('Error navigating to certificate', error)
+        }
+       
+    }
+
     return (
         <div className='course'>
             <h1>Our Esteemed Courses</h1>
@@ -56,7 +65,7 @@ const Course = () => {
                             <h3>{course.course_name}</h3>
                             {enrollment ? (
                                 enrollment.certification ? (
-                                    <button>Finished</button>
+                                    <button onClick={()=> navigateToCertification(course.course_id)}>Finished</button>
                                 ) : (
                                     <button onClick={() => NavigateToContent(course.course_id)}>Continue to course</button>
                                 )
