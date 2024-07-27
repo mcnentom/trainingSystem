@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import cozina from "../../assets/cozina1.png";
 import "./Certification.scss";
 import { BiChevronDown, BiChevronUp } from "react-icons/bi";
@@ -7,7 +7,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 const CertificationPage = () => {
-  const { courseId } = useParams(); // Use useParams to get courseId
+  // const { courseId } = useParams(); // Use useParams to get courseId
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [showCertificate, setShowCertificate] = useState(false);
@@ -21,11 +21,18 @@ const CertificationPage = () => {
       alert("Please agree with our terms to continue.");
       return;
     }
-
+  
     try {
       const userId = localStorage.getItem("user_id");
+      const courseId = localStorage.getItem("course_id")
       const currentDateAchieved = new Date().toISOString();
-
+  
+      console.log('Submitting certification:', {
+        user_id: parseInt(userId),
+        course_id: parseInt(courseId), // Make sure courseId is correctly parsed
+        date_achieved: currentDateAchieved,
+      });
+  
       const response = await fetch("http://localhost:3000/userActions/certifications", {
         method: "POST",
         headers: {
@@ -37,7 +44,7 @@ const CertificationPage = () => {
           date_achieved: currentDateAchieved,
         }),
       });
-
+  
       if (response.ok) {
         setDateAchieved(currentDateAchieved);
         setShowCertificate(true);
@@ -49,6 +56,7 @@ const CertificationPage = () => {
       setError("An error occurred while creating the certification.");
     }
   };
+  
 
   const handleReturnToAssessment = () => {
     navigate(`/course`);

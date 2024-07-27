@@ -200,10 +200,13 @@ userActions.post('/enrolled', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 userActions.post('/certifications', async (req, res) => {
   try {
       const { user_id, course_id, date_achieved } = req.body;
-
+      if (!user_id || !course_id) {
+        return res.status(400).json({ message: 'User ID and Course ID are required' });
+      }
       // Create a new certification record
       const certification = await prisma.certification.create({
         data: {

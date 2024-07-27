@@ -12,11 +12,11 @@ import './Enrollment.scss'
 
 const Enrollment = () => {
   const navigate = useNavigate();
-  const { courseId, courseName, courseImage } = useParams();
+  const {  courseName, courseImage } = useParams();
   const dispatch = useDispatch();
   // const parsedCourseInfo = JSON.parse(decodeURIComponent(courseInfo));
   // console.log(parsedCourseInfo);
-  // const courseId = localStorage.getItem('course_id');
+  const courseId = localStorage.getItem('course_id');
   const handleEnroll = async () => {
     try {
       await dispatch(enrollCourse(courseId))
