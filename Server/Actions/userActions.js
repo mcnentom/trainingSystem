@@ -93,38 +93,38 @@ userActions.get('/assessments/:courseId', async (req, res) => {
   }
 });
 
-userActions.patch('/updateScore', async (req, res) => {
+userActions.put('/score', async (req, res) => {
   try {
-      const { userId, courseId, newScore } = req.body;
+    const { user_id, course_id, newScore } = req.body;
 
-      // Check if the user is enrolled in the course
-      const enrolledCourse = await prisma.enrolledCourse.findFirst({
-          where: {
-              user_id: userId,
-              course_id: courseId,
-          },
-      });
+    if (!user_id || !course_id || value === undefined) {
+      return res.status(400).json({ error: 'User ID, Course ID, and score value are required' });
+    }
 
-      if (!enrolledCourse) {
-          return res.status(404).json({ message: 'User is not enrolled in the course' });
-      }
+    const updatedScore = await prisma.score.upsert({
+      where: {
+        user_id_course_id: {
+          user_id: user_id,
+          course_id: course_id,
+        },
+      },
+      update: {
+        score: newScore,
+      },
+      create: {
+        user_id: user_id,
+        course_id: course_id,
+        score: newScore,
+      },
+    });
 
-      // Update the score for the enrolled course
-      const updatedEnrolledCourse = await prisma.enrolledCourse.update({
-          where: {
-              id: enrolledCourse.id,
-          },
-          data: {
-              score: newScore,
-          },
-      });
-
-      res.status(200).json({ message: 'Score updated successfully', updatedEnrolledCourse });
+    res.status(200).json(updatedScore);
   } catch (error) {
-      console.error('Error updating score:', error);
-      res.status(500).json({ message: 'Internal server error' });
+    console.error('Error updating score:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 userActions.get('/enrolled/:userId', async (req, res) => {
   try {
     const userId = parseInt(req.params.userId);
@@ -151,24 +151,25 @@ userActions.get('/enrolled/:userId', async (req, res) => {
   }
 });
 
-userActions.post('/enrolled', async (req, res) => {
-  console.log(req.body);
-  try {
-    const { user_id, course_id,score } = req.body;
+userActions.post('/enrolled/:user_id/:course_id', async (req, res) => {
+  const { user_id, course_id } = req.params;
 
+  console.log('Received data:', { user_id, course_id });
+
+  try {
     // Validate user_id and course_id
     if (!user_id || !course_id) {
       return res.status(400).json({ error: 'User ID and Course ID are required' });
     }
 
-    // Check if the user and course exist
-    const user = await prisma.user.findUnique({ where: { user_id } });
-    const course = await prisma.course.findUnique({ where: { course_id } });
-
+    // Check if the user exists
+    const user = await prisma.user.findUnique({ where: { user_id: parseInt(user_id, 10) } });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Check if the course exists
+    const course = await prisma.course.findUnique({ where: { course_id: parseInt(course_id, 10) } });
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
@@ -176,8 +177,8 @@ userActions.post('/enrolled', async (req, res) => {
     // Check if the user is already enrolled in the course
     const existingEnrollment = await prisma.enrolledCourse.findFirst({
       where: {
-        user_id,
-        course_id,
+        user_id: parseInt(user_id, 10),
+        course_id: parseInt(course_id, 10),
       },
     });
 
@@ -188,9 +189,9 @@ userActions.post('/enrolled', async (req, res) => {
     // Create a new enrolled course entry
     const enrolledCourse = await prisma.enrolledCourse.create({
       data: {
-        user_id,
-        course_id,
-        score,
+        user: { connect: { user_id: parseInt(user_id, 10) } }, 
+        course: { connect: { course_id: parseInt(course_id, 10) } },
+        enrollmentDate: new Date(), // Use the current date
       },
     });
 

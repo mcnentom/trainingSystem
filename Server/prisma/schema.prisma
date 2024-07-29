@@ -16,6 +16,7 @@ model User {
   taught_courses  Course[]
   certifications  Certification[]
   enrolledCourses EnrolledCourse[]
+   score           Score[]
 }
 
 model Admin {
@@ -36,21 +37,31 @@ model Course {
   certifications  Certification[]
   assessments     Assessment[]
   enrolledCourses EnrolledCourse[]
+  score           Score[]
 }
 
 model EnrolledCourse {
   id             Int            @id @default(autoincrement())
-  user           User           @relation(fields: [user_id], references: [user_id])
+  user           User           @relation(fields: [user_id], references: [user_id], onUpdate: Cascade)
   user_id        Int
   course         Course         @relation(fields: [course_id], references: [course_id])
   course_id      Int
   enrollmentDate DateTime       @default(now())
-  score          Float          @default(0)
   certification  Certification? @relation(fields: [user_id, course_id], references: [user_id, course_id])
 
   @@unique([user_id, course_id])
 }
 
+model Score {
+  score_id Int @id @default(autoincrement())
+  user     User @relation(fields: [user_id], references: [user_id])
+  user_id  Int
+  course   Course @relation(fields: [course_id], references: [course_id])
+  course_id Int
+  score    Float  @default(0)
+
+  @@unique([user_id, course_id])
+}
 model MaterialBatch {
   batch_id       Int    @id @default(autoincrement())
   course         Course @relation(fields: [course_id], references: [course_id])

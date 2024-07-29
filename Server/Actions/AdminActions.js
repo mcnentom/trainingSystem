@@ -264,7 +264,7 @@ adminActions.delete('/users/:email', async (req, res) => {
             },
             include: {
                 taught_courses: true, 
-                certification: true  
+                certifications: true  
             }
         });
 
