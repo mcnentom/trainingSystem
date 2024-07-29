@@ -21,9 +21,9 @@ export const FetchEnrolledCourse = createAsyncThunk(
 // Async thunk to enroll in a course
 export const enrollCourse = createAsyncThunk(
     'enrollment/enrollCourse',
-    async (courseId, thunkAPI) => {
+    async ({courseId, userId}, thunkAPI) => {
         try {
-            const userId = localStorage.getItem('user_id');
+            console.log(courseId, userId)
             const response = await fetch(`http://localhost:3000/userActions/enrolled`, {
                 method: 'POST',
                 headers: {

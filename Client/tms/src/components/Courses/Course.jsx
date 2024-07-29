@@ -28,14 +28,16 @@ const Course = () => {
 
     const images = [image1, image2, image3, image4, image5, image6, image7, image8, image9];
  
-    const NavigateToEnroll = async (courseId,courseName, courseImage) => {
+    const NavigateToEnroll = async (courseId, courseName, courseImage) => {
         try {
-            // dispatch(enrollCourse(courseId));
-            navigate(`/enrollment/${courseId}/${encodeURIComponent(courseName)}/${encodeURIComponent(courseImage)}`); 
+            const userId = localStorage.getItem('user_id'); 
+            if (!userId) throw new Error("User not authenticated");
+             navigate(`/enrollment/${userId}/${courseId}/${encodeURIComponent(courseName)}/${encodeURIComponent(courseImage)}`);
         } catch (error) {
-            console.error('Error enrolling in the course:', error);
+            console.error('Error navigating to enrollment:', error);
         }
     };
+    
     const NavigateToContent = async(courseId) => {
         try {
             navigate(`/content/${courseId}`)

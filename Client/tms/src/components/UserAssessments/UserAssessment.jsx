@@ -43,13 +43,33 @@ const AssessmentPage = () => {
             });
             const newScore = (totalCorrectChoices / assessments.length) * 100;
             setScore(newScore);
+            console.log(score)
+
+            // Send the score to the backend API
+            const userId = localStorage.getItem("user_id");
+            const response = await fetch("http://localhost:3000/userActions/score", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    user_id: parseInt(userId),
+                    course_id: parseInt(courseId),
+                    score: newScore,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update score');
+            }
+
             // Route to ScorePage
             navigate(`/score/${courseId}/${newScore}`);
-            console(score);
         } catch (error) {
             console.error('Error updating score:', error);
         }
     };
+
 
     return (
         <div className='userAssessment'>
